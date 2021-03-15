@@ -1,0 +1,123 @@
+<?php
+
+/* DEV: v1.2021.03.15
+ * 
+ * This is an example script!
+ */
+
+use Psr\Http\Message\ServerRequestInterface;
+
+use codesaur\Router\Router;
+use codesaur\Http\Message\ServerRequest;
+use codesaur\Http\Application\Controller;
+use codesaur\Http\Application\Application;
+use codesaur\Http\Application\ExceptionHandler;
+
+$autoload = require_once '../vendor/autoload.php';
+$autoload->addPsr4(__NAMESPACE__ . '\\', \dirname(__FILE__));
+
+class ExampleRouter extends Router
+{
+    function __construct()
+    {        
+        $this->get('/hello/{firstname}', [ExampleController::class, 'hello'])->name('hi');
+        
+        $this->map(['POST', 'PUT'], '/post-or-put', [ExampleController::class, 'post_put']);
+        
+        $this->any('/echo/{singleword}', function (ServerRequestInterface $req)
+        {
+            echo $req->getAttribute('singleword');
+        })->name('echo');
+    }
+}
+
+class ExampleController extends Controller
+{    
+    public function index()
+    {
+        echo 'It works! [' .  self::class . ']';
+    }
+    
+    public function hello(string $firstname)
+    {
+        $user = $firstname;
+        if (isset($this->getRequest()->getQueryParams()['lastname'])) {
+            $user .= ' ' .  $this->getRequest()->getQueryParams()['lastname'];
+        }
+        
+        echo "Hello $user!";
+    }
+    
+    public function post_put()
+    {
+        $payload = $this->getRequest()->getParsedBody();
+
+        if (empty($payload['firstname'])) {
+            throw new Error('Invalid request!');
+        }
+        
+        $user = $payload['firstname'];
+        if (!empty($payload['lastname'])) {
+            $user .= " {$payload['lastname']}";
+        }
+        
+        $this->hello($user);
+    }
+    
+    public function float(float $number)
+    {
+        var_dump($number);
+    }
+}
+
+$request = new ServerRequest();
+$request->initFromGlobal();
+
+$application = new Application();
+
+$application->use(new ExceptionHandler());
+
+$application->any('/', ExampleController::class);
+
+$application->use(new ExampleRouter());
+
+$application->get('/home', function ($req) { (new ExampleController($req))->index(); })->name('home');
+
+$application->get('/hello/{string:firstname}/{lastname}', function (ServerRequestInterface $req) 
+{
+    $user = "{$req->getAttribute('firstname')} {$req->getAttribute('lastname')}";
+    
+    (new ExampleController($req))->hello($user);
+})->name('hello');
+
+$application->post('/hello/post', function (ServerRequestInterface $req)
+{
+    $payload = $req->getParsedBody();
+
+    if (empty($payload['firstname'])) {
+        throw new Error('Invalid request!');
+    }
+
+    $user = $payload['firstname'];
+    if (!empty($payload['lastname'])) {
+        $user .= " {$payload['lastname']}";
+    }
+    
+    (new ExampleController($req))->hello($user);
+});
+
+$application->get('/float/{float:number}', [ExampleController::class, 'float'])->name('float');
+
+$application->get('/sum/{int:a}/{uint:b}', function (ServerRequestInterface $req)
+{
+    $a = $req->getAttribute('a');
+    $b = $req->getAttribute('b');
+
+    $sum = $a + $b;
+
+    var_dump($a, $b, $sum);
+    
+    echo "$a + $b = $sum";
+})->name('sum');
+
+$application->handle($request);
