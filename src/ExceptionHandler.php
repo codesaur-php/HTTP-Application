@@ -32,11 +32,18 @@ class ExceptionHandler implements ExceptionHandlerInterface
         $host = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
                 || $_SERVER['SERVER_PORT'] === 443) ? 'https://' : 'http://';
         $host .= $_SERVER['HTTP_HOST'] ?? 'localhost';
-
+        
         echo    '<!doctype html>'
                 . '<html lang="en">'
                 . "<head><meta charset=\"utf-8\"><title>$title</title></head>"
                 . "<body><h1>$title</h1><p>$message</p><hr><a href=\"$host\">$host</a></body>"
                 . '</html>'; 
+
+        if (defined('CODESAUR_DEVELOPMENT')
+                && CODESAUR_DEVELOPMENT
+        ) {
+            echo '<hr>';
+            var_dump($throwable->getTrace());
+        }
     }
 }
