@@ -44,4 +44,9 @@ abstract class Controller
         
         return null;
     }
+    
+    final function isDevelopment(): bool
+    {
+        return defined('CODESAUR_DEVELOPMENT') && CODESAUR_DEVELOPMENT;
+    }
 }
