@@ -41,7 +41,7 @@ class Application implements RequestHandlerInterface
             }
         }
         
-        throw new BadMethodCallException("Bad method [$name] call for " . __CLASS__ . '!');
+        throw new BadMethodCallException(__CLASS__ . ": Bad method [$name] call for " . __CLASS__ . '!');
     }
     
     /**
@@ -73,7 +73,7 @@ class Application implements RequestHandlerInterface
             $action = $callback[1] ?? 'index';
             $controller = new $controllerClass($request);
             if (!method_exists($controller, $action)) {
-                throw new BadMethodCallException("Action named $action is not part of $controllerClass!");
+                throw new BadMethodCallException(__CLASS__ . ": Action named $action is not part of $controllerClass!");
             }
 
             $response = call_user_func_array(array($controller, $action), $route->getParameters());       
