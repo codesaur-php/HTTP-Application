@@ -16,9 +16,9 @@
     ],
     "require": {
         "php": ">=7.2.0",
-        "codesaur/globals": ">=1.0",
-        "codesaur/router": ">=1.0",
-        "codesaur/http-message": ">=1.0",
+        "codesaur/globals": ">=1.1",
+        "codesaur/router": ">=1.1",
+        "codesaur/http-message": ">=1.1",
         "psr/http-server-middleware": ">=1.0.1"
     },
     "autoload": {

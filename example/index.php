@@ -1,9 +1,13 @@
 <?php
 
+namespace codesaur\Http\Application\Example;
+
 /* DEV: v1.2021.03.15
  * 
  * This is an example script!
  */
+
+use Error;
 
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -46,8 +50,9 @@ class ExampleController extends Controller
     public function hello(string $firstname)
     {
         $user = $firstname;
-        if (isset($this->getRequest()->getQueryParams()['lastname'])) {
-            $user .= ' ' .  $this->getRequest()->getQueryParams()['lastname'];
+        $lastname = $this->getQueryParam('lastname');
+        if (!empty($lastname)) {
+            $user .= " $lastname";
         }
         
         echo "Hello $user!";
@@ -55,8 +60,8 @@ class ExampleController extends Controller
     
     public function post_put()
     {
-        $payload = $this->getRequest()->getParsedBody();
-
+        $payload = $this->getParsedBody();
+        
         if (empty($payload['firstname'])) {
             throw new Error('Invalid request!');
         }
