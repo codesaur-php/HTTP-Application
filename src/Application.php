@@ -49,7 +49,7 @@ class Application implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
-        $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);                
+        $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
         $uri_path = rawurldecode($request->getUri()->getPath());
         $target_path = str_replace($script_path, '', $uri_path);
         $route = $this->router->match($target_path, $request->getMethod());
@@ -61,7 +61,7 @@ class Application implements RequestHandlerInterface
             $request = $request->withAttribute($param, $value);
         }
 
-        $callback = $route->getCallback();            
+        $callback = $route->getCallback();
         if ($callback instanceof Closure) {
             $response = call_user_func_array($callback, array($request));
         } else {
@@ -76,7 +76,7 @@ class Application implements RequestHandlerInterface
                 throw new BadMethodCallException(__CLASS__ . ": Action named $action is not part of $controllerClass!");
             }
 
-            $response = call_user_func_array(array($controller, $action), $route->getParameters());       
+            $response = call_user_func_array(array($controller, $action), $route->getParameters());
         }
         
         return $response instanceof ResponseInterface ? $response : new Response();
