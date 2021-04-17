@@ -15,7 +15,7 @@ abstract class Controller
         $this->_request = $request;
     }
     
-    public function getRequest(): ServerRequestInterface
+    final public function getRequest(): ServerRequestInterface
     {
         return $this->_request;
     }

@@ -22,11 +22,6 @@ class Application implements RequestHandlerInterface
         $this->router = new Router();
     }
 
-    public function getRouter(): Router
-    {
-        return $this->router;
-    }
-
     public function __call(string $name, array $arguments)
     {
         if (count($arguments) !== 0) {
@@ -75,7 +70,6 @@ class Application implements RequestHandlerInterface
             if (!method_exists($controller, $action)) {
                 throw new BadMethodCallException(__CLASS__ . ": Action named $action is not part of $controllerClass!");
             }
-
             $response = call_user_func_array(array($controller, $action), $route->getParameters());
         }
         
