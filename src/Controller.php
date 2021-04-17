@@ -4,8 +4,6 @@ namespace codesaur\Http\Application;
 
 use Psr\Http\Message\ServerRequestInterface;
 
-use codesaur\Globals\Post;
-
 abstract class Controller
 {
     private $_request;
@@ -30,6 +28,11 @@ abstract class Controller
         return $this->getRequest()->getParsedBody()[$name] ?? null;
     }
 
+    final function getQueryParams(): array
+    {
+        return $this->getRequest()->getQueryParams();
+    }
+
     final function getQueryParam($name)
     {
         return $this->getRequest()->getQueryParams()[$name] ?? null;
@@ -37,12 +40,11 @@ abstract class Controller
     
     final function getPostParam($name, int $filter = FILTER_DEFAULT, $options = null)
     {
-        $post = new Post();
-        if ($post->has($name)) {
-            return $post->value($name, $filter, $options);
+        if (!filter_has_var(INPUT_POST, $name)) {
+            return null;
         }
         
-        return null;
+        return filter_input(INPUT_POST, $name, $filter, $options);
     }
     
     final function isDevelopment(): bool
