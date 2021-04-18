@@ -23,7 +23,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
             ) {
                 http_response_code($code);
             }            
-            $title .= " [HTTP $code]";
+            $title .= " $code";
         }
         
         error_log("$title: $message");

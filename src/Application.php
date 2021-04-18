@@ -36,7 +36,7 @@ class Application implements RequestHandlerInterface
             }
         }
         
-        throw new BadMethodCallException(__CLASS__ . ": Bad method [$name] call for " . __CLASS__ . '!');
+        throw new BadMethodCallException(__CLASS__ . ": Bad method [$name] call");
     }
     
     /**
@@ -52,7 +52,7 @@ class Application implements RequestHandlerInterface
             if (empty($target_path)) {
                 $target_path = '/';
             }
-            throw new Error("Unknown route pattern [$target_path]!", 404);
+            throw new Error("Unknown route pattern [$target_path]", 404);
         }
 
         foreach ($route->getParameters() as $param => $value) {
@@ -65,13 +65,13 @@ class Application implements RequestHandlerInterface
         } else {
             $controllerClass = $callback[0];
             if (!class_exists($controllerClass)) {
-                throw new Error("$controllerClass is not available!", 501);
+                throw new Error("$controllerClass is not available", 501);
             }
 
             $action = $callback[1] ?? 'index';
             $controller = new $controllerClass($request);
             if (!method_exists($controller, $action)) {
-                throw new BadMethodCallException(__CLASS__ . ": Action named $action is not part of $controllerClass!");
+                throw new BadMethodCallException(__CLASS__ . ": Action named $action is not part of $controllerClass");
             }
             $response = call_user_func_array(array($controller, $action), $route->getParameters());
         }
