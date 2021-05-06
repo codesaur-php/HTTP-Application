@@ -93,16 +93,16 @@ class Application implements RequestHandlerInterface
                 $this->queue = $queue;
             }
 
-            public function handle(ServerRequestInterface $request) : ResponseInterface
+            public function handle(ServerRequestInterface $request): ResponseInterface
             {
                 $current = current($this->queue);
                 next($this->queue);
                 
-                if (is_callable($current)) {
-                    return $current($request);
+                if ($current instanceof MiddlewareInterface) {
+                    return $current->process($request, $this);
                 }
                 
-                return $current->process($request, $this);
+                return $current($request);
             }
         };
         

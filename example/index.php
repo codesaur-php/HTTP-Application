@@ -87,7 +87,8 @@ class BeforeMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $pre_modified_request = $request->withAttribute('start-time', microtime());        
+        $pre_modified_request = $request->withAttribute('start-time', microtime());
+        
         return $handler->handle($pre_modified_request);
     }
 }
