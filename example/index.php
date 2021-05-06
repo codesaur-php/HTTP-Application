@@ -47,7 +47,7 @@ class ExampleController extends Controller
 {    
     public function index()
     {
-        echo 'It works! [' .  self::class . ']';
+        echo '<br/>It works! [' .  self::class . ']<br/><br/>';
     }
     
     public function hello(string $firstname)
@@ -87,9 +87,9 @@ class BeforeMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $pre_modified_request = $request->withAttribute('start-time', microtime());
+        $modified_request = $request->withAttribute('start-time', microtime());
         
-        return $handler->handle($pre_modified_request);
+        return $handler->handle($modified_request);
     }
 }
 
@@ -100,6 +100,20 @@ class AfterMiddleware implements MiddlewareInterface
         $response = $handler->handle($request)->withHeader('end-time', microtime());
         
         echo sprintf('<hr><i style="color:grey">Request started at {%s} and finished in {%s}</i>', $request->getAttribute('start-time'), current($response->getHeader('end-time')));
+        
+        return $response;
+    }
+}
+
+class OnionMiddleware implements MiddlewareInterface
+{
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        var_dump("i'm before");
+        
+        $response = $handler->handle($request);
+        
+        var_dump("i'm after");
         
         return $response;
     }
@@ -156,5 +170,13 @@ $application->get('/sum/{int:a}/{uint:b}', function (ServerRequestInterface $req
     
     echo "$a + $b = $sum";
 })->name('sum');
+
+$uri_path = rawurldecode($request->getUri()->getPath());
+$script_path = dirname($request->getServerParams()['SCRIPT_NAME']);                
+$target_path = str_replace($script_path, '', $uri_path);
+$target_segments = explode('/', $target_path);
+if (count($target_segments) == 1) {
+    $application->use(new OnionMiddleware());
+}
 
 $application->handle($request);
