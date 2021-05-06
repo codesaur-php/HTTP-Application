@@ -99,7 +99,7 @@ class AfterMiddleware implements MiddlewareInterface
     {
         $response = $handler->handle($request)->withHeader('end-time', microtime());
         
-        echo sprintf('<hr>Request started at {%s} and finished in {%s}', $request->getAttribute('start-time'), current($response->getHeader('end-time')));
+        echo sprintf('<hr><i style="color:grey">Request started at {%s} and finished in {%s}</i>', $request->getAttribute('start-time'), current($response->getHeader('end-time')));
         
         return $response;
     }
