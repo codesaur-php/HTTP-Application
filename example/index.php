@@ -10,6 +10,9 @@ namespace codesaur\Http\Application\Example;
 use Error;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 use codesaur\Router\Router;
 use codesaur\Http\Message\ServerRequest;
@@ -80,16 +83,39 @@ class ExampleController extends Controller
     }
 }
 
+class BeforeMiddleware implements MiddlewareInterface
+{
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        $pre_modified_request = $request->withAttribute('start-time', microtime());        
+        return $handler->handle($pre_modified_request);
+    }
+}
+
+class AfterMiddleware implements MiddlewareInterface
+{
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        $response = $handler->handle($request)->withHeader('end-time', microtime());
+        
+        echo sprintf('<hr>Request started at {%s} and finished in {%s}', $request->getAttribute('start-time'), current($response->getHeader('end-time')));
+        
+        return $response;
+    }
+}
+
 $request = new ServerRequest();
 $request->initFromGlobal();
 
 $application = new Application();
 
 $application->use(new ExceptionHandler());
+$application->use(new BeforeMiddleware());
+$application->use(new AfterMiddleware());
 
 $application->any('/', ExampleController::class);
 
-$application->use(new ExampleRouter());
+$application->merge(new ExampleRouter());
 
 $application->get('/home', function ($req) { (new ExampleController($req))->index(); })->name('home');
 

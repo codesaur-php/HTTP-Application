@@ -38,6 +38,16 @@ abstract class Controller
         return $this->getRequest()->getQueryParams()[$name] ?? null;
     }
     
+    final function getAttributes(): array
+    {
+        return $this->getRequest()->getAttributes();
+    }
+
+    final function getAttribute($name, $default = null)
+    {
+        return $this->getRequest()->getAttribute($name, $default);
+    }
+    
     final function getPostParam($name, int $filter = FILTER_DEFAULT, $options = null)
     {
         if (!filter_has_var(INPUT_POST, $name)) {
