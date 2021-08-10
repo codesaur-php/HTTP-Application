@@ -172,11 +172,12 @@ $application->get('/sum/{int:a}/{uint:b}', function (ServerRequestInterface $req
 })->name('sum');
 
 $uri_path = rawurldecode($request->getUri()->getPath());
-$script_path = dirname($request->getServerParams()['SCRIPT_NAME']);                
+$script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
+$request = $request->withAttribute('script-path', preg_replace('/\\\/', '\\1/', $script_path));
 $target_path = str_replace($script_path, '', $uri_path);
+$request = $request->withAttribute('target-path', $target_path);
 $target_segments = explode('/', $target_path);
 if (count($target_segments) == 1) {
     $application->use(new OnionMiddleware());
 }
-
 $application->handle($request);

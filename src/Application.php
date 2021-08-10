@@ -50,9 +50,18 @@ class Application implements RequestHandlerInterface
     {
         $callbacks = $this->_middlewares;
         $callbacks[] = function($request) {
-            $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
-            $uri_path = rawurldecode($request->getUri()->getPath());
-            $target_path = str_replace($script_path, '', $uri_path);
+            $script_path = $request->getAttribute('script-path');
+            $target_path = $request->getAttribute('target-path');
+            if (!isset($script_path)
+                    || !isset($target_path)
+            ) {
+                $uri_path = rawurldecode($request->getUri()->getPath());
+                $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
+                $request = $request->withAttribute('script-path', preg_replace('/\\\/', '\\1/', $script_path));
+                $target_path = str_replace($script_path, '', $uri_path);
+                $request = $request->withAttribute('target-path', $target_path);
+            }
+            
             $route = $this->router->match($target_path, $request->getMethod());
             if (!isset($route)) {
                 if (empty($target_path)) {
