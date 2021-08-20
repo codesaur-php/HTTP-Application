@@ -2,7 +2,7 @@
 
 namespace codesaur\Http\Application\Example;
 
-/* DEV: v1.2021.03.15
+/* DEV: v2.2021.08.20
  * 
  * This is an example script!
  */
@@ -87,7 +87,7 @@ class BeforeMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $modified_request = $request->withAttribute('start-time', microtime());
+        $modified_request = $request->withAttribute('start_time', microtime());
         
         return $handler->handle($modified_request);
     }
@@ -97,9 +97,9 @@ class AfterMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $response = $handler->handle($request)->withHeader('end-time', microtime());
+        $response = $handler->handle($request)->withHeader('end_time', microtime());
         
-        echo sprintf('<hr><i style="color:grey">Request started at {%s} and finished in {%s}</i>', $request->getAttribute('start-time'), current($response->getHeader('end-time')));
+        echo sprintf('<hr><i style="color:grey">Request started at {%s} and finished in {%s}</i>', $request->getAttribute('start_time'), current($response->getHeader('end_time')));
         
         return $response;
     }
@@ -123,7 +123,6 @@ $request = new ServerRequest();
 $request->initFromGlobal();
 
 $application = new Application();
-
 $application->use(new ExceptionHandler());
 $application->use(new BeforeMiddleware());
 $application->use(new AfterMiddleware());
@@ -173,9 +172,9 @@ $application->get('/sum/{int:a}/{uint:b}', function (ServerRequestInterface $req
 
 $uri_path = rawurldecode($request->getUri()->getPath());
 $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
-$request = $request->withAttribute('script-path', preg_replace('/\\\/', '\\1/', $script_path));
+$request = $request->withAttribute('script_path', preg_replace('/\\\/', '\\1/', $script_path));
 $target_path = str_replace($script_path, '', $uri_path);
-$request = $request->withAttribute('target-path', $target_path);
+$request = $request->withAttribute('target_path', $target_path);
 $target_segments = explode('/', $target_path);
 if (count($target_segments) == 1) {
     $application->use(new OnionMiddleware());
