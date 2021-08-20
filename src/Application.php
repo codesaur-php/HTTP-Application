@@ -27,11 +27,7 @@ class Application implements RequestHandlerInterface
 
     public function __call(string $name, array $arguments)
     {
-        if (isset($arguments[0])) {
-            return call_user_func_array(array($this->router, $name), $arguments);
-        }
-        
-        throw new BadMethodCallException(__CLASS__ . ": Bad method [$name] call");
+        return call_user_func_array(array($this->router, $name), $arguments);
     }
     
     public function use($object)
