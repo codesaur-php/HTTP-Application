@@ -83,10 +83,7 @@ class Application implements RequestHandlerInterface
                 }
 
                 $action = $callback[1] ?? 'index';
-                $controller = new $controllerClass();
-                if ($controller instanceof Controller) {
-                    $controller->setRequest($request);
-                }
+                $controller = new $controllerClass($request);
                 if (!method_exists($controller, $action)) {
                     throw new BadMethodCallException(__CLASS__ . ": Action named $action is not part of $controllerClass");
                 }

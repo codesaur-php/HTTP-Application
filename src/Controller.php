@@ -8,6 +8,11 @@ abstract class Controller
 {
     private $_request;
     
+    function __construct(ServerRequestInterface $request)
+    {
+        $this->setRequest($request);
+    }
+    
     final public function getRequest(): ServerRequestInterface
     {
         return $this->_request;
