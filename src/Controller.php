@@ -8,14 +8,14 @@ abstract class Controller
 {
     private $_request;
     
-    function __construct(ServerRequestInterface $request)
-    {
-        $this->_request = $request;
-    }
-    
     final public function getRequest(): ServerRequestInterface
     {
         return $this->_request;
+    }
+    
+    final public function setRequest(ServerRequestInterface $request)
+    {
+        $this->_request = $request;
     }
     
     final function getParsedBody()
