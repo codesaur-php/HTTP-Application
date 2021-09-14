@@ -5,6 +5,7 @@ namespace codesaur\Http\Application;
 use Closure;
 use Error;
 use BadMethodCallException;
+use InvalidArgumentException;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -36,6 +37,8 @@ class Application implements RequestHandlerInterface
             return set_exception_handler(array($object, 'exception'));
         } elseif ($object instanceof MiddlewareInterface) {
             $this->_middlewares[] = $object;
+        } else {
+            throw new InvalidArgumentException();
         }
     }
     
