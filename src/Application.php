@@ -93,7 +93,7 @@ class Application implements RequestHandlerInterface
             return $response instanceof ResponseInterface ? $response : new Response();
         };
         
-        reset($callbacks);        
+        reset($callbacks);
         $runner = new class ($callbacks) implements RequestHandlerInterface
         {
             public function __construct($queue)
