@@ -12,6 +12,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+use codesaur\Router\Route;
 use codesaur\Router\Router;
 use codesaur\Http\Message\Response;
 
@@ -42,6 +43,21 @@ class Application implements RequestHandlerInterface
         }
     }
     
+    public function matchRoute(ServerRequestInterface $request): Route
+    {
+        $uri_path = rawurldecode($request->getUri()->getPath());
+        $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
+        $target_path = str_replace($script_path, '', $uri_path);
+        
+        $route = $this->router->match($target_path, $request->getMethod());
+        if (!$route instanceof Route) {
+            $pattern = rawurldecode($target_path);
+            throw new Error("Unknown route pattern [$pattern]", 404);
+        }
+        
+        return $route;
+    }
+    
     /**
      * {@inheritdoc}
      */
@@ -49,30 +65,11 @@ class Application implements RequestHandlerInterface
     {
         $callbacks = $this->_middlewares;
         $callbacks[] = function($request) {
-            $script_path = $request->getAttribute('script_path');
-            $target_path = $request->getAttribute('target_path');
-            if (!isset($script_path)
-                    || !isset($target_path)
-            ) {
-                $uri_path = rawurldecode($request->getUri()->getPath());
-                $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
-                $request = $request->withAttribute('script_path', preg_replace('/\\\/', '\\1/', $script_path));
-                $target_path = str_replace($script_path, '', $uri_path);
-                $request = $request->withAttribute('target_path', $target_path);
-            }
-            
-            $route = $this->router->match($target_path, $request->getMethod());
-            if (!isset($route)) {
-                if (empty($target_path)) {
-                    $target_path = '/';
-                }
-                throw new Error("Unknown route pattern [$target_path]", 404);
-            }
-
+            $route = $this->matchRoute($request);
             foreach ($route->getParameters() as $param => $value) {
                 $request = $request->withAttribute($param, $value);
             }
-
+            
             $callback = $route->getCallback();
             if ($callback instanceof Closure) {
                 $response = call_user_func_array($callback, array($request));
