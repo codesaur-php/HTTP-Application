@@ -23,7 +23,7 @@ use codesaur\Http\Application\Application;
 use codesaur\Http\Application\ExceptionHandler;
 
 $autoload = require_once '../vendor/autoload.php';
-$autoload->addPsr4(__NAMESPACE__ . '\\', \dirname(__FILE__));
+$autoload->addPsr4(__NAMESPACE__ . '\\', dirname(__FILE__));
 
 $application = new class extends Application
 {
