@@ -43,13 +43,18 @@ class Application implements RequestHandlerInterface
         }
     }
     
+    public function getRouter(): Router
+    {
+        return $this->router;
+    }
+    
     public function matchRoute(ServerRequestInterface $request): Route
     {
         $uri_path = rawurldecode($request->getUri()->getPath());
         $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
         $target_path = str_replace($script_path, '', $uri_path);
         
-        $route = $this->router->match($target_path, $request->getMethod());
+        $route = $this->getRouter()->match($target_path, $request->getMethod());
         if (!$route instanceof Route) {
             $pattern = rawurldecode($target_path);
             throw new Error("Unknown route pattern [$pattern]", 404);
