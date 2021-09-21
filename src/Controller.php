@@ -6,21 +6,16 @@ use Psr\Http\Message\ServerRequestInterface;
 
 abstract class Controller
 {
-    private $_request;
+    protected $request;
     
     function __construct(ServerRequestInterface $request)
     {
-        $this->setRequest($request);
+        $this->request = $request;
     }
     
     final public function getRequest(): ServerRequestInterface
     {
-        return $this->_request;
-    }
-    
-    final public function setRequest(ServerRequestInterface $request)
-    {
-        $this->_request = $request;
+        return $this->request;
     }
     
     final function getParsedBody()
