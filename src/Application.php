@@ -14,6 +14,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 use codesaur\Router\Route;
 use codesaur\Router\Router;
+use codesaur\Router\RouterInterface;
 use codesaur\Http\Message\Response;
 
 class Application implements RequestHandlerInterface
@@ -43,7 +44,7 @@ class Application implements RequestHandlerInterface
         }
     }
     
-    public function getRouter(): Router
+    public function getRouter(): RouterInterface
     {
         return $this->router;
     }
@@ -71,9 +72,11 @@ class Application implements RequestHandlerInterface
         $callbacks = $this->_middlewares;
         $callbacks[] = function($request) {
             $route = $this->matchRoute($request);
+            $params = array();
             foreach ($route->getParameters() as $param => $value) {
-                $request = $request->withAttribute($param, $value);
+               $params[$param] = $value;
             }
+            $request = $request->withAttribute('param', $params);
             
             $callback = $route->getCallback();
             if ($callback instanceof Closure) {
