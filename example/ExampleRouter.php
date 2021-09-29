@@ -16,7 +16,7 @@ class ExampleRouter extends Router
         
         $this->any('/echo/{singleword}', function (ServerRequestInterface $req)
         {
-            echo $req->getAttribute('param')['singleword'];
+            echo '<br/>' . $req->getAttribute('param')['singleword'];
         })->name('echo');
         
         $this->get('/float/{float:number}', [ExampleController::class, 'float'])->name('float');
@@ -30,7 +30,7 @@ class ExampleRouter extends Router
 
             var_dump($a, $b, $sum);
 
-            echo "$a + $b = $sum";
+            echo "<br/>$a + $b = $sum";
         })->name('sum');
     }
 }

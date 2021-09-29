@@ -21,7 +21,7 @@ class ExampleController extends Controller
             $user .= " $lastname";
         }
         
-        echo "Hello $user!";
+        echo "<br/>Hello $user!";
     }
     
     public function post_put()

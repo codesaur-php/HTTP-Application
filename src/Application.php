@@ -37,7 +37,8 @@ class Application implements RequestHandlerInterface
     {
         if ($object instanceof ExceptionHandlerInterface) {
             return set_exception_handler(array($object, 'exception'));
-        } elseif ($object instanceof MiddlewareInterface) {
+        } elseif ($object instanceof MiddlewareInterface
+                || $object instanceof Closure) {
             $this->_middlewares[] = $object;
         } else {
             throw new InvalidArgumentException();
@@ -49,21 +50,6 @@ class Application implements RequestHandlerInterface
         return $this->router;
     }
     
-    public function matchRoute(ServerRequestInterface $request): Route
-    {
-        $uri_path = rawurldecode($request->getUri()->getPath());
-        $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
-        $target_path = str_replace($script_path, '', $uri_path);
-        
-        $route = $this->getRouter()->match($target_path, $request->getMethod());
-        if (!$route instanceof Route) {
-            $pattern = rawurldecode($target_path);
-            throw new Error("Unknown route pattern [$pattern]", 404);
-        }
-        
-        return $route;
-    }
-    
     /**
      * {@inheritdoc}
      */
@@ -71,7 +57,15 @@ class Application implements RequestHandlerInterface
     {
         $callbacks = $this->_middlewares;
         $callbacks[] = function($request) {
-            $route = $this->matchRoute($request);
+            $uri_path = rawurldecode($request->getUri()->getPath());
+            $script_path = rtrim(dirname($request->getServerParams()['SCRIPT_NAME']), '/') ;
+            $target_path = str_replace($script_path . $request->getAttribute('pipe'), '', $uri_path);
+            $route = $this->getRouter()->match($target_path, $request->getMethod());
+            if (!$route instanceof Route) {
+                $pattern = rawurldecode($target_path);
+                throw new Error("Unknown route pattern [$pattern]", 404);
+            }
+
             $params = array();
             foreach ($route->getParameters() as $param => $value) {
                $params[$param] = $value;
@@ -113,6 +107,8 @@ class Application implements RequestHandlerInterface
                 
                 if ($current instanceof MiddlewareInterface) {
                     return $current->process($request, $this);
+                } elseif ($current instanceof Closure) {
+                    return call_user_func_array($current, array($request, $this));
                 }
                 
                 return $current($request);

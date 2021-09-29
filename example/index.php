@@ -17,7 +17,6 @@ use Closure;
 
 use Psr\Http\Message\ServerRequestInterface;
 
-use codesaur\Router\Route;
 use codesaur\Http\Message\ServerRequest;
 use codesaur\Http\Application\Application;
 use codesaur\Http\Application\ExceptionHandler;
@@ -66,22 +65,28 @@ $application = new class extends Application
 
             (new ExampleController($req))->hello($user);
         });
-    }
-    
-    public function matchRoute(ServerRequestInterface $request): Route
-    {
-        $route = parent::matchRoute($request);
         
-        $callback = $route->getCallback();
-        if (!$callback instanceof Closure) {
-            $controller = $callback[0];
-            $action = $callback[1] ?? 'index';
-            echo "<span style=\"color:maroon\">Application executing an action [{$action}] from controller [{$controller}].</span><br/><br/>";
-        } else {
-            echo "<span style=\"color:maroon\">Application executing a callback.</span><br/><br/>";
-        }
-        
-        return $route;
+        $this->use(function ($request, $handler)
+        {
+            $res = $handler->handle($request);
+            
+            $uri_path = rawurldecode($request->getUri()->getPath());
+            $script_path = rtrim(dirname($request->getServerParams()['SCRIPT_NAME']), '/') ;
+            $target_path = str_replace($script_path . $request->getAttribute('pipe'), '', $uri_path);            
+            $route = $this->getRouter()->match($target_path, $request->getMethod());
+            $callback = $route->getCallback();            
+            echo '<br/><br/><span style="color:maroon">';
+            if (!$callback instanceof Closure) {
+                $controller = $callback[0];
+                $action = $callback[1] ?? 'index';
+                echo "Application executing an action [{$action}] from controller [{$controller}]";
+            } else {
+                echo 'Application executing a callback';
+            }
+            echo '.</span><br/><br/>';
+
+            return $res;
+        });
     }
 };
 

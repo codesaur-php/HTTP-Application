@@ -41,7 +41,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
                 && CODESAUR_DEVELOPMENT
         ) {
             echo '<hr>';
-            var_dump($throwable->getTrace());
+            print_r($throwable->getTrace());
         }
     }
 }
