@@ -36,9 +36,9 @@ $application = new class extends Application
         $this->use(new AfterMiddleware());
         $this->use(new OnionMiddleware());
 
-        $this->any('/', ExampleController::class);
+        $this->use(new ExampleRouter());
 
-        $this->merge(new ExampleRouter());
+        $this->any('/', ExampleController::class);
 
         $this->get('/home', function ($req) { (new ExampleController($req))->index(); })->name('home');
 
@@ -73,7 +73,7 @@ $application = new class extends Application
             $uri_path = rawurldecode($request->getUri()->getPath());
             $script_path = rtrim(dirname($request->getServerParams()['SCRIPT_NAME']), '/') ;
             $target_path = str_replace($script_path . $request->getAttribute('pipe'), '', $uri_path);            
-            $route = $this->getRouter()->match($target_path, $request->getMethod());
+            $route = $this->match($target_path, $request->getMethod());
             $callback = $route->getCallback();            
             echo '<br/><br/><span style="color:maroon">';
             if (!$callback instanceof Closure) {

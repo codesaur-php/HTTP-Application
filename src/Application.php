@@ -35,19 +35,16 @@ class Application implements RequestHandlerInterface
     
     public function use($object)
     {
-        if ($object instanceof ExceptionHandlerInterface) {
-            return set_exception_handler(array($object, 'exception'));
-        } elseif ($object instanceof MiddlewareInterface
+        if ($object instanceof MiddlewareInterface
                 || $object instanceof Closure) {
             $this->_middlewares[] = $object;
+        } elseif($object instanceof RouterInterface) {
+            $this->router->merge($object);
+        } elseif ($object instanceof ExceptionHandlerInterface) {
+            return set_exception_handler(array($object, 'exception'));
         } else {
             throw new InvalidArgumentException();
         }
-    }
-    
-    public function getRouter(): RouterInterface
-    {
-        return $this->router;
     }
     
     /**
@@ -60,7 +57,7 @@ class Application implements RequestHandlerInterface
             $uri_path = rawurldecode($request->getUri()->getPath());
             $script_path = rtrim(dirname($request->getServerParams()['SCRIPT_NAME']), '/') ;
             $target_path = str_replace($script_path . $request->getAttribute('pipe'), '', $uri_path);
-            $route = $this->getRouter()->match($target_path, $request->getMethod());
+            $route = $this->router->match($target_path, $request->getMethod());
             if (!$route instanceof Route) {
                 $pattern = rawurldecode($target_path);
                 throw new Error("Unknown route pattern [$pattern]", 404);
