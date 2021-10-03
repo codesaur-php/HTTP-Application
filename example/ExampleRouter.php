@@ -16,15 +16,15 @@ class ExampleRouter extends Router
         
         $this->any('/echo/{singleword}', function (ServerRequestInterface $req)
         {
-            echo '<br/>' . $req->getAttribute('param')['singleword'];
+            echo '<br/>' . $req->getAttribute('params')['singleword'];
         })->name('echo');
         
         $this->get('/float/{float:number}', [ExampleController::class, 'float'])->name('float');
 
         $this->get('/sum/{int:a}/{uint:b}', function (ServerRequestInterface $req)
         {
-            $a = $req->getAttribute('param')['a'];
-            $b = $req->getAttribute('param')['b'];
+            $a = $req->getAttribute('params')['a'];
+            $b = $req->getAttribute('params')['b'];
 
             $sum = $a + $b;
 

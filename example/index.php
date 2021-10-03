@@ -44,8 +44,8 @@ $application = new class extends Application
 
         $this->get('/hello/{string:firstname}/{lastname}', function (ServerRequestInterface $req)
         {
-            $fullname = $req->getAttribute('param')['firstname'];
-            $fullname .= ' ' . $req->getAttribute('param')['lastname'];
+            $fullname = $req->getAttribute('params')['firstname'];
+            $fullname .= ' ' . $req->getAttribute('params')['lastname'];
 
             (new ExampleController($req))->hello($fullname);
         })->name('hello');

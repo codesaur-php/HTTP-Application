@@ -61,13 +61,14 @@ class Application implements RequestHandlerInterface
             if (!$route instanceof Route) {
                 $pattern = rawurldecode($target_path);
                 throw new Error("Unknown route pattern [$pattern]", 404);
-            }
+            }            
 
             $params = array();
             foreach ($route->getParameters() as $param => $value) {
                $params[$param] = $value;
             }
-            $request = $request->withAttribute('param', $params);
+            $request = $request->withAttribute('params', $params);
+            $request = $request->withAttribute('router', $this->router);
             
             $callback = $route->getCallback();
             if ($callback instanceof Closure) {
