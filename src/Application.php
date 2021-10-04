@@ -15,7 +15,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use codesaur\Router\Route;
 use codesaur\Router\Router;
 use codesaur\Router\RouterInterface;
-use codesaur\Http\Message\Response;
+use codesaur\Http\Message\NonBodyResponse;
 
 class Application implements RequestHandlerInterface
 {
@@ -88,7 +88,7 @@ class Application implements RequestHandlerInterface
                 $response = call_user_func_array(array($controller, $action), $route->getParameters());
             }
 
-            return $response instanceof ResponseInterface ? $response : new Response();
+            return $response instanceof ResponseInterface ? $response : new NonBodyResponse();
         };
         
         reset($callbacks);
