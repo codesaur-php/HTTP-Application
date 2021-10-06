@@ -9,19 +9,19 @@ use codesaur\Router\Router;
 class ExampleRouter extends Router
 {
     function __construct()
-    {        
-        $this->get('/hello/{firstname}', [ExampleController::class, 'hello'])->name('hi');
+    {
+        $this->GET('/hello/{utf8:firstname}', [ExampleController::class, 'hello'])->name('hi');
         
-        $this->map(['POST', 'PUT'], '/post-or-put', [ExampleController::class, 'post_put']);
+        $this->POST_PUT('/post-or-put', [ExampleController::class, 'post_put']);
         
-        $this->any('/echo/{singleword}', function (ServerRequestInterface $req)
+        $this->GET_POST_PUT_DELETE_OPTIONS('/echo/{singleword}', function (ServerRequestInterface $req)
         {
             echo '<br/>' . $req->getAttribute('params')['singleword'];
         })->name('echo');
         
-        $this->get('/float/{float:number}', [ExampleController::class, 'float'])->name('float');
+        $this->GET('/float/{float:number}', [ExampleController::class, 'float'])->name('float');
 
-        $this->get('/sum/{int:a}/{uint:b}', function (ServerRequestInterface $req)
+        $this->GET('/sum/{int:a}/{uint:b}', function (ServerRequestInterface $req)
         {
             $a = $req->getAttribute('params')['a'];
             $b = $req->getAttribute('params')['b'];

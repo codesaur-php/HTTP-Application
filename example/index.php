@@ -38,11 +38,11 @@ $application = new class extends Application
 
         $this->use(new ExampleRouter());
 
-        $this->any('/', ExampleController::class);
+        $this->GET('/', [ExampleController::class, 'index']);
 
-        $this->get('/home', function ($req) { (new ExampleController($req))->index(); })->name('home');
+        $this->GET('/home', function ($req) { (new ExampleController($req))->index(); })->name('home');
 
-        $this->get('/hello/{string:firstname}/{lastname}', function (ServerRequestInterface $req)
+        $this->GET('/hello/{utf8:firstname}/{utf8:lastname}', function (ServerRequestInterface $req)
         {
             $fullname = $req->getAttribute('params')['firstname'];
             $fullname .= ' ' . $req->getAttribute('params')['lastname'];
@@ -50,7 +50,7 @@ $application = new class extends Application
             (new ExampleController($req))->hello($fullname);
         })->name('hello');
 
-        $this->post('/hello/post', function (ServerRequestInterface $req)
+        $this->POST('/hello/post', function (ServerRequestInterface $req)
         {
             $payload = $req->getParsedBody();
 
@@ -72,13 +72,16 @@ $application = new class extends Application
             
             $uri_path = rawurldecode($request->getUri()->getPath());
             $script_path = rtrim(dirname($request->getServerParams()['SCRIPT_NAME']), '/') ;
-            $target_path = str_replace($script_path . $request->getAttribute('pipe'), '', $uri_path);            
-            $route = $this->match($target_path, $request->getMethod());
-            $callback = $route->getCallback();            
+            $target_path = str_replace($script_path . $request->getAttribute('pipe'), '', $uri_path);
+            if (empty($target_path)) {
+                $target_path = '/';
+            }
+            $callback = $this->match($target_path, $request->getMethod());
+            $callable = $callback->getCallable();
             echo '<br/><br/><span style="color:maroon">';
-            if (!$callback instanceof Closure) {
-                $controller = $callback[0];
-                $action = $callback[1] ?? 'index';
+            if (!$callable instanceof Closure) {
+                $controller = $callable[0];
+                $action = $callable[1];
                 echo "Application executing an action [{$action}] from controller [{$controller}]";
             } else {
                 echo 'Application executing a callback';

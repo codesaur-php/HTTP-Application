@@ -12,8 +12,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use codesaur\Router\Route;
 use codesaur\Router\Router;
+use codesaur\Router\Callback;
 use codesaur\Router\RouterInterface;
 use codesaur\Http\Message\NonBodyResponse;
 
@@ -58,34 +58,37 @@ class Application implements RequestHandlerInterface
             $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
             $strip_path = (strlen($script_path) > 1 ? $script_path : '') . $request->getAttribute('pipe', '');
             $target_path = $strip_path != '' ? str_replace($strip_path, '', $uri_path) : $uri_path;
-            $route = $this->router->match($target_path, $request->getMethod());
-            if (!$route instanceof Route) {
+            if (empty($target_path)) {
+                $target_path ='/';
+            }
+            $rule = $this->router->match($target_path, $request->getMethod());
+            if (!$rule instanceof Callback) {
                 $pattern = rawurldecode($target_path);
                 throw new Error("Unknown route pattern [$pattern]", 404);
-            }            
-
+            }
+            
             $params = array();
-            foreach ($route->getParameters() as $param => $value) {
+            foreach ($rule->getParameters() as $param => $value) {
                $params[$param] = $value;
             }
             $request = $request->withAttribute('params', $params);
             $request = $request->withAttribute('router', $this->router);
             
-            $callback = $route->getCallback();
-            if ($callback instanceof Closure) {
-                $response = call_user_func_array($callback, array($request));
+            $callable = $rule->getCallable();
+            if ($callable instanceof Closure) {
+                $response = call_user_func_array($callable, array($request));
             } else {
-                $controllerClass = $callback[0];
+                $controllerClass = $callable[0];
                 if (!class_exists($controllerClass)) {
                     throw new Error("$controllerClass is not available", 501);
                 }
 
-                $action = $callback[1] ?? 'index';
+                $action = $callable[1];
                 $controller = new $controllerClass($request);
                 if (!method_exists($controller, $action)) {
                     throw new BadMethodCallException(__CLASS__ . ": Action named $action is not part of $controllerClass");
                 }
-                $response = call_user_func_array(array($controller, $action), $route->getParameters());
+                $response = call_user_func_array(array($controller, $action), $rule->getParameters());
             }
 
             return $response instanceof ResponseInterface ? $response : new NonBodyResponse();
