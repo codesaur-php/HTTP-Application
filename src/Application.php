@@ -22,7 +22,7 @@ class Application implements RequestHandlerInterface
     protected $router;
     
     private $_middlewares = array();
-            
+    
     function __construct()
     {
         $this->router = new Router();
