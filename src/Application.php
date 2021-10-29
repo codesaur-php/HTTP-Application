@@ -86,7 +86,7 @@ class Application implements RequestHandlerInterface
                 $action = $callable[1];
                 $controller = new $controllerClass($request);
                 if (!method_exists($controller, $action)) {
-                    throw new BadMethodCallException(__CLASS__ . ": Action named $action is not part of $controllerClass");
+                    throw new BadMethodCallException(__CLASS__ . ": Action named $action is not part of $controllerClass", 501);
                 }
                 $response = call_user_func_array(array($controller, $action), $rule->getParameters());
             }
