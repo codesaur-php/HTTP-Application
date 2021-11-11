@@ -55,9 +55,12 @@ class Application implements RequestHandlerInterface
         $callbacks = $this->_middlewares;
         $callbacks[] = function($request) {
             $uri_path = rawurldecode($request->getUri()->getPath());
-            $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
-            $strip_path = (strlen($script_path) > 1 ? $script_path : '') . $request->getAttribute('pipe', '');
-            $target_path = $strip_path != '' ? str_replace($strip_path, '', $uri_path) : $uri_path;
+            $strip_lngth = strlen(dirname($request->getServerParams()['SCRIPT_NAME']));
+            if ($strip_lngth <= 1) {
+                $strip_lngth = 0;
+            }
+            $strip_lngth += strlen($request->getAttribute('pipe', ''));
+            $target_path = $strip_lngth > 1 ? substr($uri_path, $strip_lngth) : $uri_path;
             if (empty($target_path)) {
                 $target_path ='/';
             }

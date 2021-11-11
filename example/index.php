@@ -69,10 +69,13 @@ $application = new class extends Application
         $this->use(function ($request, $handler)
         {
             $res = $handler->handle($request);
-            
             $uri_path = rawurldecode($request->getUri()->getPath());
-            $script_path = rtrim(dirname($request->getServerParams()['SCRIPT_NAME']), '/') ;
-            $target_path = str_replace($script_path . $request->getAttribute('pipe'), '', $uri_path);
+            $strip_lngth = strlen(dirname($request->getServerParams()['SCRIPT_NAME']));
+            if ($strip_lngth <= 1) {
+                $strip_lngth = 0;
+            }
+            $strip_lngth += strlen($request->getAttribute('pipe', ''));
+            $target_path = $strip_lngth > 1 ? substr($uri_path, $strip_lngth) : $uri_path;
             if (empty($target_path)) {
                 $target_path = '/';
             }
