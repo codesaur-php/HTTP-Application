@@ -16,6 +16,7 @@ use Error;
 use Closure;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 use codesaur\Http\Message\ServerRequest;
 use codesaur\Http\Application\Application;
@@ -66,20 +67,25 @@ $application = new class extends Application
             (new ExampleController($req))->hello($user);
         });
         
-        $this->use(function ($request, $handler)
+        $this->use(function (ServerRequestInterface $request, RequestHandlerInterface $handler)
         {
             $res = $handler->handle($request);
+            
             $uri_path = rawurldecode($request->getUri()->getPath());
-            $strip_lngth = strlen(dirname($request->getServerParams()['SCRIPT_NAME']));
-            if ($strip_lngth <= 1) {
-                $strip_lngth = 0;
+            $script_path = $request->getServerParams()['SCRIPT_TARGET_PATH'] ?? null;
+            if (!isset($script_path)) {
+                $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
+                if ($script_path == '\\' || $script_path == '/') {
+                    $script_path = null;
+                }
             }
-            $strip_lngth += strlen($request->getAttribute('pipe', ''));
-            $target_path = $strip_lngth > 1 ? substr($uri_path, $strip_lngth) : $uri_path;
-            if (empty($target_path)) {
-                $target_path = '/';
+            if (!empty($script_path)) {
+                $uri_path = substr($uri_path, strlen($script_path));
             }
-            $callback = $this->match($target_path, $request->getMethod());
+            if (empty($uri_path)) {
+                $uri_path ='/';
+            }
+            $callback = $this->match($uri_path, $request->getMethod());
             $callable = $callback->getCallable();
             echo '<br/><br/><span style="color:maroon">';
             if (!$callable instanceof Closure) {
