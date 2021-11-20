@@ -3,7 +3,7 @@
 namespace codesaur\Http\Application;
 
 use Closure;
-use Error;
+use Exception;
 use BadMethodCallException;
 use InvalidArgumentException;
 
@@ -71,7 +71,7 @@ class Application implements RequestHandlerInterface
             $rule = $this->router->match($uri_path, $request->getMethod());
             if (!$rule instanceof Callback) {
                 $pattern = rawurldecode($uri_path);
-                throw new Error("Unknown route pattern [$pattern]", 404);
+                throw new Exception("Unknown route pattern [$pattern]", 404);
             }
             
             $params = array();
@@ -87,7 +87,7 @@ class Application implements RequestHandlerInterface
             } else {
                 $controllerClass = $callable[0];
                 if (!class_exists($controllerClass)) {
-                    throw new Error("$controllerClass is not available", 501);
+                    throw new Exception("$controllerClass is not available", 501);
                 }
 
                 $action = $callable[1];

@@ -2,7 +2,7 @@
 
 namespace codesaur\Http\Application\Example;
 
-use Error;
+use Exception;
 
 use codesaur\Http\Application\Controller;
 
@@ -29,7 +29,7 @@ class ExampleController extends Controller
         $payload = $this->getParsedBody();
         
         if (empty($payload['firstname'])) {
-            throw new Error('Invalid request!');
+            throw new Exception('Invalid request!');
         }
         
         $user = $payload['firstname'];
