@@ -12,7 +12,7 @@ define('CODESAUR_DEVELOPMENT', true);
 ini_set('display_errors', 'On');
 error_reporting(E_ALL & ~E_STRICT & ~E_NOTICE);
 
-use Exception;
+use Error;
 use Closure;
 
 use Psr\Http\Message\ServerRequestInterface;
@@ -56,7 +56,7 @@ $application = new class extends Application
             $payload = $req->getParsedBody();
 
             if (empty($payload['firstname'])) {
-                throw new Exception('Invalid request!');
+                throw new Error('Invalid request!');
             }
 
             $user = $payload['firstname'];
