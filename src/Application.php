@@ -36,7 +36,8 @@ class Application implements RequestHandlerInterface
     public function use($object)
     {
         if ($object instanceof MiddlewareInterface
-                || $object instanceof Closure) {
+                || $object instanceof Closure
+        ) {
             $this->_middlewares[] = $object;
         } elseif($object instanceof RouterInterface) {
             $this->router->merge($object);

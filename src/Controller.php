@@ -23,21 +23,11 @@ abstract class Controller
         return $this->getRequest()->getParsedBody();
     }
 
-    final function getBodyParam($name)
-    {
-        return $this->getRequest()->getParsedBody()[$name] ?? null;
-    }
-
     final function getQueryParams(): array
     {
         return $this->getRequest()->getQueryParams();
     }
 
-    final function getQueryParam($name)
-    {
-        return $this->getRequest()->getQueryParams()[$name] ?? null;
-    }
-    
     final function getAttributes(): array
     {
         return $this->getRequest()->getAttributes();
@@ -46,15 +36,6 @@ abstract class Controller
     final function getAttribute($name, $default = null)
     {
         return $this->getRequest()->getAttribute($name, $default);
-    }
-    
-    final function getPostParam($name, int $filter = FILTER_DEFAULT, $options = null)
-    {
-        if (!filter_has_var(INPUT_POST, $name)) {
-            return null;
-        }
-        
-        return filter_input(INPUT_POST, $name, $filter, $options);
     }
     
     final function isDevelopment(): bool

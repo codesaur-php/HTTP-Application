@@ -16,9 +16,9 @@ class ExampleController extends Controller
     public function hello(string $firstname)
     {
         $user = $firstname;
-        $lastname = $this->getQueryParam('lastname');
-        if (!empty($lastname)) {
-            $user .= " $lastname";
+        $params = $this->getQueryParams();
+        if (!empty($params['lastname'])) {
+            $user .= " {$params['lastname']}";
         }
         
         echo "<br/>Hello $user!";

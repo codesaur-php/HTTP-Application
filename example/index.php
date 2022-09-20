@@ -47,7 +47,6 @@ $application = new class extends Application
         {
             $fullname = $req->getAttribute('params')['firstname'];
             $fullname .= ' ' . $req->getAttribute('params')['lastname'];
-
             (new ExampleController($req))->hello($fullname);
         })->name('hello');
 
