@@ -74,7 +74,9 @@ $application = new class extends Application
             $script_path = $request->getServerParams()['SCRIPT_TARGET_PATH'] ?? null;
             if (!isset($script_path)) {
                 $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
-                if ($script_path == '\\' || $script_path == '/') {
+                if ($script_path == '\\'
+                    || $script_path == '/'
+                ) {
                     $script_path = null;
                 }
             }

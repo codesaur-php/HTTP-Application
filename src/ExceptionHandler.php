@@ -19,7 +19,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
             $status = "STATUS_$code";
             $reasonPhrase = ReasonPrhase::class;
             if (defined("$reasonPhrase::$status")
-                    && !headers_sent()
+                && !headers_sent()
             ) {
                 http_response_code($code);
             }
@@ -29,16 +29,16 @@ class ExceptionHandler implements ExceptionHandlerInterface
         error_log("$title: $message");
         
         $host = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-                || $_SERVER['SERVER_PORT'] === 443) ? 'https://' : 'http://';
+            || $_SERVER['SERVER_PORT'] === 443) ? 'https://' : 'http://';
         $host .= $_SERVER['HTTP_HOST'] ?? 'localhost';        
-        echo    '<!doctype html>'
-                . '<html lang="en">'
-                . "<head><meta charset=\"utf-8\"><title>$title</title></head>"
-                . "<body><h1>$title</h1><p>$message</p><hr><a href=\"$host\">$host</a></body>"
-                . '</html>'; 
+        echo '<!doctype html>'
+            . '<html lang="en">'
+            . "<head><meta charset=\"utf-8\"><title>$title</title></head>"
+            . "<body><h1>$title</h1><p>$message</p><hr><a href=\"$host\">$host</a></body>"
+            . '</html>'; 
 
         if (defined('CODESAUR_DEVELOPMENT')
-                && CODESAUR_DEVELOPMENT
+            && CODESAUR_DEVELOPMENT
         ) {
             echo '<hr>';
             var_dump($throwable->getTrace());

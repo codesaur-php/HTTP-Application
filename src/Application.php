@@ -36,7 +36,7 @@ class Application implements RequestHandlerInterface
     public function use($object)
     {
         if ($object instanceof MiddlewareInterface
-                || $object instanceof Closure
+            || $object instanceof Closure
         ) {
             $this->_middlewares[] = $object;
         } elseif($object instanceof RouterInterface) {
@@ -59,7 +59,9 @@ class Application implements RequestHandlerInterface
             $script_path = $request->getServerParams()['SCRIPT_TARGET_PATH'] ?? null;
             if (!isset($script_path)) {
                 $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
-                if ($script_path == '\\' || $script_path == '/') {
+                if ($script_path == '\\'
+                    || $script_path == '/'
+                ) {
                     $script_path = null;
                 }
             }
