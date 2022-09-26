@@ -17,7 +17,7 @@
     "require": {
         "psr/http-server-middleware": ">=1.0.1",
         "codesaur/router": ">=4.1.6",
-        "codesaur/http-message": ">=1.4.3"
+        "codesaur/http-message": ">=1.4.4"
     },
     "autoload": {
         "psr-4": {
