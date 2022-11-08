@@ -19,7 +19,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
             $status = "STATUS_$code";
             $reasonPhrase = ReasonPrhase::class;
             if (defined("$reasonPhrase::$status")
-                && !headers_sent()
+                    && !headers_sent()
             ) {
                 http_response_code($code);
             }
@@ -38,7 +38,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
             . '</html>'; 
 
         if (defined('CODESAUR_DEVELOPMENT')
-            && CODESAUR_DEVELOPMENT
+                && CODESAUR_DEVELOPMENT
         ) {
             echo '<hr>';
             var_dump($throwable->getTrace());
