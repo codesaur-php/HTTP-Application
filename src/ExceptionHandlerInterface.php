@@ -2,9 +2,7 @@
 
 namespace codesaur\Http\Application;
 
-use Throwable;
-
 interface ExceptionHandlerInterface
 {
-    public function exception(Throwable $throwable);
+    public function exception(\Throwable $throwable);
 }

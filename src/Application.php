@@ -2,11 +2,6 @@
 
 namespace codesaur\Http\Application;
 
-use Closure;
-use Error;
-use BadMethodCallException;
-use InvalidArgumentException;
-
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -19,9 +14,9 @@ use codesaur\Http\Message\NonBodyResponse;
 
 class Application implements RequestHandlerInterface
 {
-    protected $router;
+    protected RouterInterface $router;
     
-    private $_middlewares = array();
+    private array $_middlewares = [];
     
     function __construct()
     {
@@ -30,21 +25,21 @@ class Application implements RequestHandlerInterface
 
     public function __call(string $name, array $arguments)
     {
-        return call_user_func_array(array($this->router, $name), $arguments);
+        return call_user_func_array([$this->router, $name], $arguments);
     }
     
     public function use($object)
     {
         if ($object instanceof MiddlewareInterface
-            || $object instanceof Closure
+            || $object instanceof \Closure
         ) {
             $this->_middlewares[] = $object;
         } elseif($object instanceof RouterInterface) {
             $this->router->merge($object);
         } elseif ($object instanceof ExceptionHandlerInterface) {
-            return set_exception_handler(array($object, 'exception'));
+            return set_exception_handler([$object, 'exception']);
         } else {
-            throw new InvalidArgumentException();
+            throw new \InvalidArgumentException();
         }
     }
     
@@ -74,10 +69,10 @@ class Application implements RequestHandlerInterface
             $rule = $this->router->match($uri_path, $request->getMethod());
             if (!$rule instanceof Callback) {
                 $pattern = rawurldecode($uri_path);
-                throw new Error("Unknown route pattern [$pattern]", 404);
+                throw new \Error("Unknown route pattern [$pattern]", 404);
             }
             
-            $params = array();
+            $params = [];
             foreach ($rule->getParameters() as $param => $value) {
                $params[$param] = $value;
             }
@@ -85,20 +80,20 @@ class Application implements RequestHandlerInterface
             $request = $request->withAttribute('router', $this->router);
             
             $callable = $rule->getCallable();
-            if ($callable instanceof Closure) {
-                $response = call_user_func_array($callable, array($request));
+            if ($callable instanceof \Closure) {
+                $response = call_user_func_array($callable, [$request]);
             } else {
                 $controllerClass = $callable[0];
                 if (!class_exists($controllerClass)) {
-                    throw new Error("$controllerClass is not available", 501);
+                    throw new \Error("$controllerClass is not available", 501);
                 }
 
                 $action = $callable[1];
                 $controller = new $controllerClass($request);
                 if (!method_exists($controller, $action)) {
-                    throw new BadMethodCallException(__CLASS__ . ": Action named $action is not part of $controllerClass", 501);
+                    throw new \BadMethodCallException(__CLASS__ . ": Action named $action is not part of $controllerClass", 501);
                 }
-                $response = call_user_func_array(array($controller, $action), $rule->getParameters());
+                $response = call_user_func_array([$controller, $action], $params);
             }
 
             return $response instanceof ResponseInterface ? $response : new NonBodyResponse();
@@ -107,6 +102,8 @@ class Application implements RequestHandlerInterface
         reset($callbacks);
         $runner = new class ($callbacks) implements RequestHandlerInterface
         {
+            protected $queue;
+            
             public function __construct($queue)
             {
                 $this->queue = $queue;
@@ -119,8 +116,8 @@ class Application implements RequestHandlerInterface
                 
                 if ($current instanceof MiddlewareInterface) {
                     return $current->process($request, $this);
-                } elseif ($current instanceof Closure) {
-                    return call_user_func_array($current, array($request, $this));
+                } elseif ($current instanceof \Closure) {
+                    return call_user_func_array($current, [$request, $this]);
                 }
                 
                 return $current($request);

@@ -4,16 +4,13 @@ namespace codesaur\Http\Application;
 
 use codesaur\Http\Message\ReasonPrhase;
 
-use Throwable;
-use Exception;
-
 class ExceptionHandler implements ExceptionHandlerInterface
 {
-    public function exception(Throwable $throwable)
+    public function exception(\Throwable $throwable)
     {
         $code = $throwable->getCode();
         $message = $throwable->getMessage();
-        $title = $throwable instanceof Exception ? 'Exception' : 'Error';
+        $title = $throwable instanceof \Exception ? 'Exception' : 'Error';
         
         if ($code !== 0) {
             $status = "STATUS_$code";
@@ -29,7 +26,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
         error_log("$title: $message");
         
         $host = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-            || $_SERVER['SERVER_PORT'] === 443) ? 'https://' : 'http://';
+            || $_SERVER['SERVER_PORT'] == 443) ? 'https://' : 'http://';
         $host .= $_SERVER['HTTP_HOST'] ?? 'localhost';        
         echo '<!doctype html>'
             . '<html lang="en">'

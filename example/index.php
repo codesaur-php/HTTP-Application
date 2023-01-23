@@ -10,10 +10,7 @@ namespace codesaur\Http\Application\Example;
 define('CODESAUR_DEVELOPMENT', true);
 
 ini_set('display_errors', 'On');
-error_reporting(E_ALL & ~E_STRICT & ~E_NOTICE);
-
-use Error;
-use Closure;
+error_reporting(\E_ALL & ~\E_STRICT & ~\E_NOTICE);
 
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -55,7 +52,7 @@ $application = new class extends Application
             $payload = $req->getParsedBody();
 
             if (empty($payload['firstname'])) {
-                throw new Error('Invalid request!');
+                throw new \Error('Invalid request!');
             }
 
             $user = $payload['firstname'];
@@ -89,7 +86,7 @@ $application = new class extends Application
             $callback = $this->match($uri_path, $request->getMethod());
             $callable = $callback->getCallable();
             echo '<br/><br/><span style="color:maroon">';
-            if (!$callable instanceof Closure) {
+            if (!$callable instanceof \Closure) {
                 $controller = $callable[0];
                 $action = $callable[1];
                 echo "Application executing an action [{$action}] from controller [{$controller}]";

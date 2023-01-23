@@ -6,7 +6,7 @@ use Psr\Http\Message\ServerRequestInterface;
 
 abstract class Controller
 {
-    protected $request;
+    protected ServerRequestInterface $request;
     
     function __construct(ServerRequestInterface $request)
     {
