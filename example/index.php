@@ -10,7 +10,7 @@ namespace codesaur\Http\Application\Example;
 define('CODESAUR_DEVELOPMENT', true);
 
 ini_set('display_errors', 'On');
-error_reporting(\E_ALL & ~\E_STRICT & ~\E_NOTICE);
+error_reporting(\E_ALL);
 
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 namespace codesaur\Http\Application;
 
@@ -12,7 +12,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
         $message = $throwable->getMessage();
         $title = $throwable instanceof \Exception ? 'Exception' : 'Error';
         
-        if ($code !== 0) {
+        if ($code != 0) {
             $status = "STATUS_$code";
             $reasonPhrase = ReasonPrhase::class;
             if (defined("$reasonPhrase::$status")
@@ -25,7 +25,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
         
         error_log("$title: $message");
         
-        $host = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        $host = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off')
             || $_SERVER['SERVER_PORT'] == 443) ? 'https://' : 'http://';
         $host .= $_SERVER['HTTP_HOST'] ?? 'localhost';        
         echo '<!doctype html>'

@@ -18,9 +18,9 @@ abstract class Controller
         return $this->request;
     }
     
-    final function getParsedBody()
+    final function getParsedBody(): array
     {
-        return $this->getRequest()->getParsedBody();
+        return (array) $this->getRequest()->getParsedBody();
     }
 
     final function getQueryParams(): array
@@ -33,7 +33,7 @@ abstract class Controller
         return $this->getRequest()->getAttributes();
     }
 
-    final function getAttribute($name, $default = null)
+    final function getAttribute(string $name, $default = null)
     {
         return $this->getRequest()->getAttribute($name, $default);
     }
