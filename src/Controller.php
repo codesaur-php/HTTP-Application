@@ -20,7 +20,12 @@ abstract class Controller
     
     final function getParsedBody(): array
     {
-        return (array) $this->getRequest()->getParsedBody();
+        $parsedBody = $this->getRequest()->getParsedBody();
+        if (empty($parsedBody)) {
+            return [];
+        }
+        
+        return (array) $parsedBody;
     }
 
     final function getQueryParams(): array
