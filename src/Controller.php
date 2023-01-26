@@ -21,7 +21,8 @@ abstract class Controller
     final function getParsedBody(): array
     {
         $parsedBody = $this->getRequest()->getParsedBody();
-        if (empty($parsedBody)) {
+        
+        if ($parsedBody == null) {
             return [];
         }
         
