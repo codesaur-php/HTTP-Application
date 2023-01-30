@@ -18,7 +18,7 @@ class Application implements RequestHandlerInterface
     
     private array $_middlewares = [];
     
-    function __construct()
+    public function __construct()
     {
         $this->router = new Router();
     }
@@ -102,17 +102,17 @@ class Application implements RequestHandlerInterface
         reset($callbacks);
         $runner = new class ($callbacks) implements RequestHandlerInterface
         {
-            protected $queue;
+            private $_queue;
             
             public function __construct($queue)
             {
-                $this->queue = $queue;
+                $this->_queue = $queue;
             }
 
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
-                $current = current($this->queue);
-                next($this->queue);
+                $current = current($this->_queue);
+                next($this->_queue);
                 
                 if ($current instanceof MiddlewareInterface) {
                     return $current->process($request, $this);

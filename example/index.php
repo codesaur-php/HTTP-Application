@@ -24,7 +24,7 @@ $autoload->addPsr4(__NAMESPACE__ . '\\', dirname(__FILE__));
 
 $application = new class extends Application
 {
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
         

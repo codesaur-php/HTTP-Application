@@ -8,7 +8,7 @@ use codesaur\Router\Router;
 
 class ExampleRouter extends Router
 {
-    function __construct()
+    public function __construct()
     {
         $this->GET('/hello/{utf8:firstname}', [ExampleController::class, 'hello'])->name('hi');
         
