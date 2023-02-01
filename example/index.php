@@ -70,7 +70,7 @@ $application = new class extends Application
             $uri_path = \rawurldecode($request->getUri()->getPath());
             $script_path = $request->getServerParams()['SCRIPT_TARGET_PATH'] ?? null;
             if (!isset($script_path)) {
-                $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
+                $script_path = \dirname($request->getServerParams()['SCRIPT_NAME']);
                 if ($script_path == '\\'
                     || $script_path == '/'
                 ) {
