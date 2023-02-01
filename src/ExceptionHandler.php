@@ -15,15 +15,15 @@ class ExceptionHandler implements ExceptionHandlerInterface
         if ($code != 0) {
             $status = "STATUS_$code";
             $reasonPhrase = ReasonPrhase::class;
-            if (defined("$reasonPhrase::$status")
-                    && !headers_sent()
+            if (\defined("$reasonPhrase::$status")
+                    && !\headers_sent()
             ) {
-                http_response_code($code);
+                \http_response_code($code);
             }
             $title .= " $code";
         }
         
-        error_log("$title: $message");
+        \error_log("$title: $message");
         
         $host = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off')
             || $_SERVER['SERVER_PORT'] == 443) ? 'https://' : 'http://';
@@ -34,11 +34,11 @@ class ExceptionHandler implements ExceptionHandlerInterface
             . "<body><h1>$title</h1><p>$message</p><hr><a href=\"$host\">$host</a></body>"
             . '</html>'; 
 
-        if (defined('CODESAUR_DEVELOPMENT')
+        if (\defined('CODESAUR_DEVELOPMENT')
                 && CODESAUR_DEVELOPMENT
         ) {
             echo '<hr>';
-            var_dump($throwable->getTrace());
+            \var_dump($throwable->getTrace());
         }
     }
 }

@@ -28,7 +28,7 @@ class ExampleRouter extends Router
 
             $sum = $a + $b;
 
-            var_dump($a, $b, $sum);
+            \var_dump($a, $b, $sum);
 
             echo "<br/>$a + $b = $sum";
         })->name('sum');

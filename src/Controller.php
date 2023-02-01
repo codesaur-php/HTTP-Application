@@ -46,6 +46,6 @@ abstract class Controller
     
     public final function isDevelopment(): bool
     {
-        return defined('CODESAUR_DEVELOPMENT') && CODESAUR_DEVELOPMENT;
+        return \defined('CODESAUR_DEVELOPMENT') && CODESAUR_DEVELOPMENT;
     }
 }

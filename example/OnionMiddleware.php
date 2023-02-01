@@ -11,11 +11,11 @@ class OnionMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        var_dump("i'm onion before");
+        \var_dump("i'm onion before");
         
         $response = $handler->handle($request);
         
-        var_dump("i'm onion after");
+        \var_dump("i'm onion after");
         
         return $response;
     }

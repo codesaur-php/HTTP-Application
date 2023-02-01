@@ -7,10 +7,10 @@ namespace codesaur\Http\Application\Example;
  * This is an example script!
  */
 
-define('CODESAUR_DEVELOPMENT', true);
+\define('CODESAUR_DEVELOPMENT', true);
 
-ini_set('display_errors', 'On');
-error_reporting(\E_ALL);
+\ini_set('display_errors', 'On');
+\error_reporting(\E_ALL);
 
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -20,7 +20,7 @@ use codesaur\Http\Application\Application;
 use codesaur\Http\Application\ExceptionHandler;
 
 $autoload = require_once '../vendor/autoload.php';
-$autoload->addPsr4(__NAMESPACE__ . '\\', dirname(__FILE__));
+$autoload->addPsr4(__NAMESPACE__ . '\\', \dirname(__FILE__));
 
 $application = new class extends Application
 {
@@ -67,7 +67,7 @@ $application = new class extends Application
         {
             $res = $handler->handle($request);
             
-            $uri_path = rawurldecode($request->getUri()->getPath());
+            $uri_path = \rawurldecode($request->getUri()->getPath());
             $script_path = $request->getServerParams()['SCRIPT_TARGET_PATH'] ?? null;
             if (!isset($script_path)) {
                 $script_path = dirname($request->getServerParams()['SCRIPT_NAME']);
@@ -78,7 +78,7 @@ $application = new class extends Application
                 }
             }
             if (!empty($script_path)) {
-                $uri_path = substr($uri_path, strlen($script_path));
+                $uri_path = \substr($uri_path, \strlen($script_path));
             }
             if (empty($uri_path)) {
                 $uri_path ='/';

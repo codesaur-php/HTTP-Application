@@ -11,9 +11,9 @@ class AfterMiddleware implements MiddlewareInterface
 {
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $response = $handler->handle($request)->withHeader('end_time', microtime());
+        $response = $handler->handle($request)->withHeader('end_time', \microtime());
         
-        echo sprintf('<hr><i style="color:grey">Request started at {%s} and finished in {%s}</i>', $request->getAttribute('start_time'), current($response->getHeader('end_time')));
+        echo \sprintf('<hr><i style="color:grey">Request started at {%s} and finished in {%s}</i>', $request->getAttribute('start_time'), \current($response->getHeader('end_time')));
         
         return $response;
     }

@@ -5,10 +5,10 @@ namespace codesaur\Http\Application\Example;
 use codesaur\Http\Application\Controller;
 
 class ExampleController extends Controller
-{    
+{
     public function index()
     {
-        echo '<br/>It works! [' .  self::class . ']<br/><br/>';
+        echo '<br/>It works! [' . self::class . ']<br/><br/>';
     }
     
     public function hello(string $firstname)
@@ -40,6 +40,6 @@ class ExampleController extends Controller
     
     public function float(float $number)
     {
-        var_dump($number);
+        \var_dump($number);
     }
 }
