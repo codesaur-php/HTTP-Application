@@ -10,7 +10,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
     {
         $code = $throwable->getCode();
         $message = $throwable->getMessage();
-        $title = $throwable instanceof \Exception ? 'Exception' : 'Error';
+        $title = \get_class($throwable);
         
         if ($code != 0) {
             $status = "STATUS_$code";
