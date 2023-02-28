@@ -73,6 +73,7 @@ $application = new class extends Application
                 $script_path = \dirname($request->getServerParams()['SCRIPT_NAME']);
                 if ($script_path == '\\'
                     || $script_path == '/'
+                    || $script_path == '.'
                 ) {
                     $script_path = null;
                 }

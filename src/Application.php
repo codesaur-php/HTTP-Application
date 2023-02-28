@@ -56,6 +56,7 @@ class Application implements RequestHandlerInterface
                 $script_path = \dirname($request->getServerParams()['SCRIPT_NAME']);
                 if ($script_path == '\\'
                     || $script_path == '/'
+                    || $script_path == '.'
                 ) {
                     $script_path = null;
                 }
