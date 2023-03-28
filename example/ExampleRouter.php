@@ -10,7 +10,7 @@ class ExampleRouter extends Router
 {
     public function __construct()
     {
-        $this->GET('/hello/{utf8:firstname}', [ExampleController::class, 'hello'])->name('hi');
+        $this->GET('/hello/{firstname}', [ExampleController::class, 'hello'])->name('hi');
         
         $this->POST_PUT('/post-or-put', [ExampleController::class, 'post_put']);
         

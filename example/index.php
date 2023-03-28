@@ -40,7 +40,7 @@ $application = new class extends Application
 
         $this->GET('/home', function ($req) { (new ExampleController($req))->index(); })->name('home');
 
-        $this->GET('/hello/{utf8:firstname}/{utf8:lastname}', function (ServerRequestInterface $req)
+        $this->GET('/hello/{firstname}/{lastname}', function (ServerRequestInterface $req)
         {
             $fullname = $req->getAttribute('params')['firstname'];
             $fullname .= ' ' . $req->getAttribute('params')['lastname'];
