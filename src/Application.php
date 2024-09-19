@@ -50,20 +50,17 @@ class Application implements RequestHandlerInterface
     {
         $callbacks = $this->_middlewares;
         $callbacks[] = function($request) {
-            $requestPath = $request->getRequestTarget();
-            if (($pos = \strpos($requestPath, '?')) !== false) {
-                $requestPath = \substr($requestPath, 0, $pos);
-            }
-            $scriptPath = \dirname($request->getServerParams()['SCRIPT_NAME']);
-            if (($lngth = \strlen($scriptPath)) > 1) {
-                $requestPath = \substr($requestPath, $lngth);
-                $requestPath = '/' . \ltrim($requestPath, '/');
+            $path = \rawurldecode($request->getUri()->getPath());
+            if (($lngth = \strlen(\dirname($request->getServerParams()['SCRIPT_NAME']))) > 1) {
+                $path = \substr($path, $lngth);
+                $path = '/' . \ltrim($path, '/');
             }
             
-            $rule = $this->router->match($requestPath, $request->getMethod());
+            $rule = $this->router->match($path, $request->getMethod());
             if (!$rule instanceof Callback) {
-                throw new \Error("Unknown route pattern [$requestPath]", 404);
-            }            
+                throw new \Error("Unknown route pattern [$path]", 404);
+            }
+            
             $params = [];
             foreach ($rule->getParameters() as $param => $value) {
                $params[$param] = $value;
