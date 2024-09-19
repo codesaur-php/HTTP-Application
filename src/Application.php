@@ -50,29 +50,20 @@ class Application implements RequestHandlerInterface
     {
         $callbacks = $this->_middlewares;
         $callbacks[] = function($request) {
-            $uri_path = \rawurldecode($request->getUri()->getPath());
-            $script_path = $request->getServerParams()['SCRIPT_TARGET_PATH'] ?? null;
-            if (!isset($script_path)) {
-                $script_path = \dirname($request->getServerParams()['SCRIPT_NAME']);
-                if ($script_path == '\\'
-                    || $script_path == '/'
-                    || $script_path == '.'
-                ) {
-                    $script_path = null;
-                }
+            $requestPath = $request->getRequestTarget();
+            if (($pos = \strpos($requestPath, '?')) !== false) {
+                $requestPath = \substr($requestPath, 0, $pos);
             }
-            if (!empty($script_path)) {
-                $uri_path = \substr($uri_path, \strlen($script_path));
-            }
-            if (empty($uri_path)) {
-                $uri_path = '/';
-            }
-            $rule = $this->router->match($uri_path, $request->getMethod());
-            if (!$rule instanceof Callback) {
-                $pattern = \rawurldecode($uri_path);
-                throw new \Error("Unknown route pattern [$pattern]", 404);
+            $scriptPath = \dirname($request->getServerParams()['SCRIPT_NAME']);
+            if (($lngth = \strlen($scriptPath)) > 1) {
+                $requestPath = \substr($requestPath, $lngth);
+                $requestPath = '/' . \ltrim($requestPath, '/');
             }
             
+            $rule = $this->router->match($requestPath, $request->getMethod());
+            if (!$rule instanceof Callback) {
+                throw new \Error("Unknown route pattern [$requestPath]", 404);
+            }            
             $params = [];
             foreach ($rule->getParameters() as $param => $value) {
                $params[$param] = $value;
