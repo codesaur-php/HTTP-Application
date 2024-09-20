@@ -43,9 +43,4 @@ abstract class Controller
     {
         return $this->getRequest()->getAttribute($name, $default);
     }
-    
-    public final function isDevelopment(): bool
-    {
-        return \defined('CODESAUR_DEVELOPMENT') && CODESAUR_DEVELOPMENT;
-    }
 }

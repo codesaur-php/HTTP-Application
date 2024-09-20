@@ -2,12 +2,10 @@
 
 namespace codesaur\Http\Application\Example;
 
-/* DEV: v2.2021.08.20
+/* DEV: v5.2024.09.20
  * 
  * This is an example script!
  */
-
-\define('CODESAUR_DEVELOPMENT', true);
 
 \ini_set('display_errors', 'On');
 \error_reporting(\E_ALL);
