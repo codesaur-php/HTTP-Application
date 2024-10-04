@@ -55,7 +55,9 @@ class Application implements RequestHandlerInterface
                 $path = \substr($path, $lngth);
                 $path = '/' . \ltrim($path, '/');
             }
-            
+            if ($path == '') {
+                $path = '/';
+            }
             $rule = $this->router->match($path, $request->getMethod());
             if (!$rule instanceof Callback) {
                 throw new \Error("Unknown route pattern [$path]", 404);
