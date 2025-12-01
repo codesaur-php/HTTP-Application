@@ -168,7 +168,7 @@ $this->use(new ExceptionHandler());
 
 - Алдааны код байвал HTTP статус автоматаар тохируулна  
 - Алдааг `error_log` руу бичнэ  
-- Сайхан HTML error page буцаана  
+- HTML error page буцаана  
 - Development mode дээр trace харагдана  
 
 ```php
