@@ -20,6 +20,8 @@ namespace codesaur\Http\Application\Example;
 \ini_set('display_errors', 'On');
 \error_reporting(\E_ALL);
 
+\define('CODESAUR_DEVELOPMENT', true);
+
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
