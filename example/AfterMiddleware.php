@@ -10,7 +10,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * Class AfterMiddleware
  *
- * Request lifecycle дууссаны дараа ажилладаг middleware.
+ * RequestHandlerInterface::handle() дууссаны дараа ажилладаг middleware.
  *
  * - Response дээр "end_time" header нэмэх
  * - Request processing хугацаа консолд хэвлэх

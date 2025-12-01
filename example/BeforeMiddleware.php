@@ -10,7 +10,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * Class BeforeMiddleware
  *
- * Request гүйцэтгэхийн өмнөх middleware.
+ * RequestHandlerInterface::handle() гүйцэтгэхийн өмнөх middleware.
  * Энэ middleware нь request объектод "start_time" attribute-ийг нэмдэг.
  *
  * → Request lifecycle эхлэх timestamp хадгална.
