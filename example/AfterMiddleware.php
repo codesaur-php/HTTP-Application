@@ -7,14 +7,29 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+/**
+ * Class AfterMiddleware
+ *
+ * Request lifecycle дууссаны дараа ажилладаг middleware.
+ *
+ * - Response дээр "end_time" header нэмэх
+ * - Request processing хугацаа консолд хэвлэх
+ */
 class AfterMiddleware implements MiddlewareInterface
 {
+    /**
+     * @inheritdoc
+     */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $response = $handler->handle($request)->withHeader('end_time', \microtime());
-        
-        echo \sprintf('<hr><i style="color:grey">Request started at {%s} and finished in {%s}</i>', $request->getAttribute('start_time'), \current($response->getHeader('end_time')));
-        
+
+        echo \sprintf(
+            '<hr><i style="color:grey">Request started at {%s} and finished in {%s}</i>',
+            $request->getAttribute('start_time'),
+            \current($response->getHeader('end_time'))
+        );
+
         return $response;
     }
 }

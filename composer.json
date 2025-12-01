@@ -1,20 +1,21 @@
 {
     "name": "codesaur/http-application",
-    "description": "An elegant object-oriented application development framework component for PHP 8.2.1 or newer",
+    "description": "PHP 8.2+ · PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application цөм",
     "keywords": [
-        "http", "application", "http application", "router", "server request handler", "psr-7", "psr-15", "mongol", "mongolia", "mongolian", "монгол", "codesaur", "кодзавр", "narankhuu", "наранхүү", "ololt", "ололт", "мөнхийн ололт", "munkhiin ololt"
+        "http", "application", "http application", "router", "server request handler", "psr-7", "psr-15", "mongol", "mongolia", "монгол", "codesaur", "narankhuu", "coden", "кодзавр", "наранхүү", "коден"
     ],
     "homepage": "https://github.com/codesaur-php",
     "authors": [
         {
-            "name": "Narankhuu",
-            "email": "codesaur@gmail.com"
+            "name": "Narankhuu (+976 99000287)",
+            "email": "codesaur@gmail.com",
+            "homepage": "https://github.com/codesaur"
         }
     ],
     "require": {
         "psr/http-server-middleware": ">=1.0.2",
-        "codesaur/router": ">=4.3.0",
-        "codesaur/http-message": ">=1.7.0"
+        "codesaur/router": ">=4.4.2",
+        "codesaur/http-message": ">=1.8.0"
     },
     "autoload": {
         "psr-4": {
