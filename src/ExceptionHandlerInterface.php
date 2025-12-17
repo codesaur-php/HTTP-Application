@@ -3,7 +3,7 @@
 namespace codesaur\Http\Application;
 
 /**
- * Interface ExceptionHandlerInterface
+ * ExceptionHandlerInterface
  *
  * Application түвшний алдааны боловсруулагч интерфэйс.
  *
@@ -21,14 +21,27 @@ namespace codesaur\Http\Application;
  *   - Хөгжүүлэлтийн горимд stack trace харуулах
  *
  * @package codesaur\Http\Application
+ * @author Narankhuu
+ * @since 1.0.0
  */
 interface ExceptionHandlerInterface
 {
     /**
      * Гарсан Exception / Throwable-ийг боловсруулах функц.
      *
+     * Энэ функц нь системд гарсан аливаа алдааг хүлээн авч,
+     * HTTP статус код тохируулах, лог бичих, error page үүсгэх
+     * зэрэг боловсруулалт хийх үүрэгтэй.
+     *
      * @param \Throwable $throwable Илэрсэн Exception эсвэл Error объект
      * @return void
+     *
+     * @example
+     * public function exception(\Throwable $throwable): void {
+     *     http_response_code($throwable->getCode() ?: 500);
+     *     error_log($throwable->getMessage());
+     *     echo "Error: " . $throwable->getMessage();
+     * }
      */
-    public function exception(\Throwable $throwable);
+    public function exception(\Throwable $throwable): void;
 }

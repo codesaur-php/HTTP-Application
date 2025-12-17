@@ -1,5 +1,19 @@
 # 🦖 codesaur/http-application
+
+![CI](https://github.com/codesaur-php/HTTP-Application/workflows/CI/badge.svg)
+![PHP Version](https://img.shields.io/badge/php-%3E%3D8.2-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+
 **PHP 8.2+ · PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application цөм**
+
+---
+
+## 📚 Документаци
+
+- 📘 [API Documentation](API.md) - Бүрэн API удирдлага
+- 🔍 [Code Review](REVIEW.md) - Код шалгалтын тайлан
+
+---
 
 `codesaur/http-application` нь PSR-7 (HTTP Message) ба PSR-15 (HTTP Server RequestHandler/Middleware) стандартууд дээр суурилсан **минималист**, **өндөр уян хатан**, **middleware суурьтай** Application цөм юм.
 
@@ -61,17 +75,42 @@ Application → Middleware-үүд → Match route → Controller/action/Closure 
 
 ---
 
-# 📁 Жишээ төслийн бүтэц (`example/`)
+# 📁 Төслийн файл бүтэц
 
 ```
-example/
- ├── index.php
- ├── ExampleRouter.php
- ├── ExampleController.php
- ├── BeforeMiddleware.php
- ├── AfterMiddleware.php
- ├── OnionMiddleware.php
- └── .htaccess
+HTTP-Application/
+ ├── .github/
+ │   └── workflows/
+ │       └── ci.yml              # GitHub Actions CI/CD workflow
+ ├── example/                     # Жишээ код
+ │   ├── index.php               # Application boot script
+ │   ├── ExampleRouter.php       # Router жишээ
+ │   ├── ExampleController.php   # Controller жишээ
+ │   ├── BeforeMiddleware.php    # Before middleware жишээ
+ │   ├── AfterMiddleware.php     # After middleware жишээ
+ │   ├── OnionMiddleware.php     # Onion middleware жишээ
+ │   └── .htaccess               # Apache rewrite тохиргоо
+ ├── src/                         # Эх код
+ │   ├── Application.php         # Application цөм класс
+ │   ├── Controller.php          # Controller суурь класс
+ │   ├── ExceptionHandler.php   # Exception handler
+ │   └── ExceptionHandlerInterface.php  # Exception handler интерфэйс
+ ├── tests/                       # Тестүүд
+ │   ├── ApplicationTest.php     # Application тестүүд
+ │   ├── ControllerTest.php      # Controller тестүүд
+ │   ├── ExceptionHandlerTest.php # ExceptionHandler тестүүд
+ │   ├── EdgeCaseTest.php        # Edge case тестүүд
+ │   ├── PerformanceTest.php     # Performance тестүүд
+ │   ├── TestHelper.php          # Тест helper функцүүд
+ │   └── Integration/
+ │       └── ApplicationIntegrationTest.php  # Integration тестүүд
+├── .gitignore                   # Git ignore файл
+├── [API.md](API.md)             # API документаци
+├── composer.json                # Composer тохиргоо
+├── LICENSE                      # MIT лиценз
+├── phpunit.xml                  # PHPUnit тохиргоо
+├── README.md                    # Энэ файл
+└── [REVIEW.md](REVIEW.md)       # Code review баримт бичиг
 ```
 
 ---
@@ -209,9 +248,126 @@ $app->use(new MyHandler());
 
 ---
 
+# 🧪 Тест ажиллуулах
+
+Багц нь PHPUnit тестүүдтэй ирдэг. Доорх зааварчилгааны дагуу тестүүдийг ажиллуулж болно.
+
+## Windows дээр тест ажиллуулах
+
+### Шаардлага:
+- PHP 8.2+ суулгасан байх
+- Composer суулгасан байх
+- PowerShell эсвэл Command Prompt
+
+### Алхам:
+
+1. **Dependencies суулгах:**
+   ```powershell
+   composer install
+   ```
+
+2. **PHPUnit ажиллуулах:**
+   ```powershell
+   vendor\bin\phpunit
+   ```
+   
+   Эсвэл coverage-тэй:
+   ```powershell
+   vendor\bin\phpunit --coverage-html coverage/html
+   ```
+
+3. **Тодорхой тест файл ажиллуулах:**
+   ```powershell
+   vendor\bin\phpunit tests/ApplicationTest.php
+   ```
+
+## Linux дээр тест ажиллуулах
+
+### Шаардлага:
+- PHP 8.2+ суулгасан байх
+- Composer суулгасан байх
+- PHP-XML, PHP-MBSTRING extensions идэвхжсэн байх
+
+### Алхам:
+
+1. **Dependencies суулгах:**
+   ```bash
+   composer install
+   ```
+
+2. **PHPUnit ажиллуулах:**
+   ```bash
+   vendor/bin/phpunit
+   ```
+   
+   Эсвэл coverage-тэй:
+   ```bash
+   vendor/bin/phpunit --coverage-html coverage/html
+   ```
+
+3. **Тодорхой тест файл ажиллуулах:**
+   ```bash
+   vendor/bin/phpunit tests/ApplicationTest.php
+   ```
+
+## macOS дээр тест ажиллуулах
+
+### Шаардлага:
+- PHP 8.2+ суулгасан байх (Homebrew ашиглан: `brew install php@8.3`)
+- Composer суулгасан байх
+- Terminal
+
+### Алхам:
+
+1. **Dependencies суулгах:**
+   ```bash
+   composer install
+   ```
+
+2. **PHPUnit ажиллуулах:**
+   ```bash
+   vendor/bin/phpunit
+   ```
+   
+   Эсвэл coverage-тэй:
+   ```bash
+   vendor/bin/phpunit --coverage-html coverage/html
+   ```
+
+3. **Тодорхой тест файл ажиллуулах:**
+   ```bash
+   vendor/bin/phpunit tests/ApplicationTest.php
+   ```
+
+## Тестүүдийн бүтэц
+
+```
+tests/
+ ├── ApplicationTest.php      # Application классын тестүүд
+ ├── ControllerTest.php       # Controller суурь классын тестүүд
+ └── ExceptionHandlerTest.php # ExceptionHandler классын тестүүд
+```
+
+## GitHub Actions CI/CD
+
+Төсөл нь GitHub Actions CI/CD workflow-тэй ирдэг. Push эсвэл Pull Request хийхэд автоматаар тестүүд ажиллана:
+
+- **PHP хувилбарууд:** 8.2, 8.3, 8.4
+- **Үйлдлийн системүүд:** Ubuntu, Windows, macOS
+- **Coverage report:** Codecov руу автоматаар илгээгдэнэ
+
+---
+
 # 📄 Лиценз
 
 Энэ төсөл MIT лицензтэй.
+
+---
+
+# 📚 Нэмэлт Документаци
+
+- 📘 [API.md](API.md) - Бүрэн API удирдлага, бүх класс болон method-үүдийн дэлгэрэнгүй тайлбар (PHPDoc комментоос Cursor AI үүсгэв)
+- 🔍 [REVIEW.md](REVIEW.md) - Код шалгалтын тайлан, код чанар, архитектур, PSR стандартууд (Cursor AI шинжилсэн)
 
 ---
 

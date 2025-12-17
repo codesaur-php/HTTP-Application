@@ -13,10 +13,11 @@ use codesaur\Router\RouterInterface;
 use codesaur\Http\Message\NonBodyResponse;
 
 /**
- * Class Application
+ * Application Class
  *
- * PSR-15 стандартын RequestHandlerInterface-г хэрэгжүүлсэн Application класс.
- * Энэ нь HTTP хүсэлтүүдийг дараалсан middleware-ээр дамжуулж,
+ * PSR-15 стандартын RequestHandlerInterface-г хэрэгжүүлсэн HTTP Application цөм класс.
+ *
+ * Энэ класс нь HTTP хүсэлтүүдийг дараалсан middleware-ээр дамжуулж,
  * маршрутын callback эсвэл Controller->action-г ажиллуулж
  * PSR-7 Response буцаах үндсэн цөм модуль юм.
  *
@@ -30,32 +31,40 @@ use codesaur\Http\Message\NonBodyResponse;
  * Энэ багц нь codesaur/router ба codesaur/http-message багцуудад тулгуурлана.
  *
  * @package codesaur\Http\Application
+ * @author Narankhuu
+ * @since 1.0.0
+ * @implements RequestHandlerInterface
  */
 class Application implements RequestHandlerInterface
 {
     /**
-     * @var RouterInterface
+     * Application дотор ашиглагдах үндсэн Router instance.
      *
-     * Application дотор ашиглагдах үндсэн Router.
      * Энэ нь бүх route pattern, method mapping, параметр тайлбарлалтыг гүйцэтгэнэ.
+     * Router-ийн бүх public method-үүдийг Application-оор шууд дуудах боломжтой.
+     *
+     * @var RouterInterface
      */
     protected RouterInterface $router;
 
     /**
-     * @var array
-     *
-     * Middleware жагсаалт.
+     * Middleware жагсаалт (queue).
      *
      * Дараах төрлүүдийг хүлээн авна:
      *  - PSR-15 MiddlewareInterface
      *  - Closure middleware ($request, $handler)
      *  - RouterInterface (merge хийнэ)
      *  - ExceptionHandlerInterface (глобал exception handler болгоно)
+     *
+     * @var array<int, MiddlewareInterface|\Closure>
      */
     private array $_middlewares = [];
 
     /**
-     * Application үүсэх үед шинэ Router автоматаар үүснэ.
+     * Application конструктор.
+     *
+     * Application үүсэх үед шинэ Router instance автоматаар үүснэ.
+     * Энэ Router-г ашиглан маршрутуудыг бүртгэж болно.
      */
     public function __construct()
     {
@@ -65,13 +74,17 @@ class Application implements RequestHandlerInterface
     /**
      * Router-ийн аливаа public method-ийг Application-оор шууд дуудах боломж олгоно.
      *
-     * Жишээ:
-     *   $app->GET('/home', fn() => ...);
-     *   $app->POST(...);
+     * Энэ нь magic method бөгөөд Router классын бүх public method-үүдийг
+     * Application instance-оор шууд дуудах боломжийг олгодог.
      *
-     * @param string $name Дуудах функцийн нэр
-     * @param array $arguments Аргументууд
-     * @return mixed
+     * @param string $name Дуудах функцийн нэр (жишээ: GET, POST, PUT, DELETE гэх мэт)
+     * @param array<int, mixed> $arguments Аргументууд
+     * @return mixed Router method-ийн буцаах утга
+     *
+     * @example
+     * $app->GET('/home', fn($req) => echo 'Home');
+     * $app->POST('/api/users', [UserController::class, 'create']);
+     * $app->GET('/user/{int:id}', [UserController::class, 'show'])->name('user.show');
      */
     public function __call(string $name, array $arguments)
     {
@@ -81,27 +94,45 @@ class Application implements RequestHandlerInterface
     /**
      * Middleware, Router эсвэл ExceptionHandler бүртгэх.
      *
-     * @param mixed $object
-     * @return mixed|void
+     * Энэ метод нь дараах төрлийн объектуудыг хүлээн авна:
+     * - MiddlewareInterface: PSR-15 стандартын middleware
+     * - Closure: Closure middleware function
+     * - RouterInterface: Өөр router-ийн маршрутуудыг нэгтгэх
+     * - ExceptionHandlerInterface: Глобал exception handler бүртгэх
+     *
+     * @param MiddlewareInterface|\Closure|RouterInterface|ExceptionHandlerInterface $object
+     *        Бүртгэх объект
+     * @return mixed|void ExceptionHandler бүртгэх үед өмнөх handler буцаана
      *
      * @throws \InvalidArgumentException Буруу төрлийн объект дамжуулсан үед
+     *
+     * @example
+     * $app->use(new MyMiddleware());
+     * $app->use(function ($req, $handler) { return $handler->handle($req); });
+     * $app->use(new ExceptionHandler());
+     * $app->use(new CustomRouter());
      */
     public function use($object)
     {
         // PSR-15 Middleware болон Closure
         if ($object instanceof MiddlewareInterface || $object instanceof \Closure) {
             $this->_middlewares[] = $object;
+            return;
 
         // Өөр router-ийн маршрутыг үндсэн router-т нэгтгэж бүртгэх
         } elseif ($object instanceof RouterInterface) {
             $this->router->merge($object);
+            return;
 
         // Exception handler бүртгэх
         } elseif ($object instanceof ExceptionHandlerInterface) {
             return \set_exception_handler([$object, 'exception']);
-        } else {
-            throw new \InvalidArgumentException("Unsupported object passed to Application::use()");
         }
+
+        throw new \InvalidArgumentException(
+            "Unsupported object passed to Application::use(). " .
+            "Expected MiddlewareInterface, Closure, RouterInterface, or ExceptionHandlerInterface."
+        );
     }
 
     /**
@@ -109,18 +140,19 @@ class Application implements RequestHandlerInterface
      *
      * PSR-15 RequestHandlerInterface::handle()–ийн хэрэгжилт.
      *
-     * Энэ функц нь:
+     * Энэ функц нь HTTP хүсэлтийг боловсруулах бүрэн процесс-ийг гүйцэтгэнэ:
      *
      *  1. Middleware queue-г бэлтгэнэ
      *  2. Эцсийн route matcher callback-г queue-н төгсгөлд нэмнэ
-     *  3. Middleware-үүдийг дарааллаар нь ажиллуулна
+     *  3. Middleware-үүдийг дарааллаар нь ажиллуулна (onion model)
      *  4. Тохирох маршрут олдох юм бол Controller/action эсвэл Closure-г дуудаж Response үүсгэнэ
+     *  5. Response-г буцаана (ResponseInterface биш бол NonBodyResponse fallback)
      *
-     * @param ServerRequestInterface $request PSR-7 ServerRequest
-     * @return ResponseInterface PSR-7 Response
+     * @param ServerRequestInterface $request PSR-7 ServerRequest объект
+     * @return ResponseInterface PSR-7 Response объект
      *
-     * @throws \Error Маршрут олдоогүй буюу controller/action байхгүй бол
-     * @throws \BadMethodCallException Controller дотор action байхгүй үед
+     * @throws \Error Маршрут олдоогүй (404) буюу controller class байхгүй (501) үед
+     * @throws \BadMethodCallException Controller дотор action method байхгүй үед (501)
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
@@ -197,21 +229,32 @@ class Application implements RequestHandlerInterface
 
         /**
          * Middleware queue-г PSR-15 стандартын дагуу дараалж гүйцэтгэгч дотоод Runner класс.
+         *
+         * Энэ нь anonymous class бөгөөд middleware chain-ийг onion model-ээр ажиллуулна.
          */
         $runner = new class ($callbacks) implements RequestHandlerInterface {
-            /** @var array Middleware queue */
-            private $_queue;
+            /**
+             * Middleware queue (array of MiddlewareInterface or Closure).
+             *
+             * @var array<int, MiddlewareInterface|\Closure|callable>
+             */
+            private array $_queue;
 
-            public function __construct($queue)
+            /**
+             * Runner конструктор.
+             *
+             * @param array<int, MiddlewareInterface|\Closure|callable> $queue Middleware queue
+             */
+            public function __construct(array $queue)
             {
                 $this->_queue = $queue;
             }
 
             /**
-             * Middleware-ийг дарааллаар нь ажиллуулах.
+             * Middleware-ийг дарааллаар нь ажиллуулах (PSR-15 onion model).
              *
-             * @param ServerRequestInterface $request
-             * @return ResponseInterface
+             * @param ServerRequestInterface $request PSR-7 ServerRequest
+             * @return ResponseInterface PSR-7 Response
              */
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
@@ -221,13 +264,14 @@ class Application implements RequestHandlerInterface
                 // PSR-15 MiddlewareInterface
                 if ($current instanceof MiddlewareInterface) {
                     return $current->process($request, $this);
+                }
 
                 // Closure middleware
-                } elseif ($current instanceof \Closure) {
+                if ($current instanceof \Closure) {
                     return \call_user_func_array($current, [$request, $this]);
                 }
 
-                // Эцсийн route matcher
+                // Эцсийн route matcher callback
                 return $current($request);
             }
         };

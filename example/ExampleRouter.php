@@ -6,13 +6,28 @@ use Psr\Http\Message\ServerRequestInterface;
 use codesaur\Router\Router;
 
 /**
- * Class ExampleRouter
+ * ExampleRouter Class
  *
  * Энэ бол codesaur/router ашиглан маршрутууд тодорхойлсон router жишээ.
- * Dynamic parameters, typed params, multi-method routes гэх мэтийг харуулдаг.
+ *
+ * Энэ router нь дараах боломжуудыг харуулдаг:
+ * - Dynamic parameters (route parameters)
+ * - Typed parameters (int, uint, float, string)
+ * - Multi-method routes (POST_PUT, GET_POST_PUT_DELETE_OPTIONS)
+ * - Named routes
+ * - Closure routes
+ *
+ * @package codesaur\Http\Application\Example
+ * @author Narankhuu
+ * @since 1.0.0
  */
 class ExampleRouter extends Router
 {
+    /**
+     * ExampleRouter конструктор.
+     *
+     * Бүх жишээ маршрутуудыг энд бүртгэнэ.
+     */
     public function __construct()
     {
         // GET + name (route нэрлэх)

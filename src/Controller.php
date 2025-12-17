@@ -5,22 +5,33 @@ namespace codesaur\Http\Application;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Class Controller
+ * Controller Base Class
  *
  * Бүх Controller классуудын суурь анги.
- * Request объектын shortcut getter-үүдийг агуулна.
+ *
+ * Энэ класс нь PSR-7 ServerRequest объектын shortcut getter method-үүдийг агуулна.
+ * Controller-үүд энэ класс-аас удамшиж, request мэдээлэлд хялбар хандах боломжтой.
  *
  * @package codesaur\Http\Application
+ * @author Narankhuu
+ * @since 1.0.0
  */
 abstract class Controller
 {
-    /** @var ServerRequestInterface Ирсэн HTTP хүсэлт */
+    /**
+     * Ирсэн HTTP хүсэлт (PSR-7 ServerRequest).
+     *
+     * @var ServerRequestInterface
+     */
     protected ServerRequestInterface $request;
 
     /**
-     * Controller үүсэхэд Request автоматаар дамжина.
+     * Controller конструктор.
      *
-     * @param ServerRequestInterface $request
+     * Controller үүсэхэд PSR-7 ServerRequest автоматаар дамжина.
+     * Энэ request-г бүх method-үүдэд ашиглаж болно.
+     *
+     * @param ServerRequestInterface $request PSR-7 ServerRequest объект
      */
     public function __construct(ServerRequestInterface $request)
     {
@@ -28,9 +39,9 @@ abstract class Controller
     }
 
     /**
-     * Request-г авах.
+     * Request объектыг авах.
      *
-     * @return ServerRequestInterface
+     * @return ServerRequestInterface PSR-7 ServerRequest объект
      */
     public final function getRequest(): ServerRequestInterface
     {
@@ -38,10 +49,16 @@ abstract class Controller
     }
 
     /**
-     * POST/PUT/JSON parsed body буцаах.
-     * Null бол хоосон массив буцаана.
+     * POST/PUT/JSON parsed body-г буцаах.
      *
-     * @return array
+     * Request body нь JSON эсвэл form-urlencoded байвал
+     * парс хийгдсэн массив буцаана. Null бол хоосон массив буцаана.
+     *
+     * @return array<string, mixed> Parsed body массив
+     *
+     * @example
+     * $data = $this->getParsedBody();
+     * $name = $data['name'] ?? 'Unknown';
      */
     public final function getParsedBody(): array
     {
@@ -50,9 +67,16 @@ abstract class Controller
     }
 
     /**
-     * Query string параметрүүд авах (?page=1 гэх мэт)
+     * Query string параметрүүдийг авах.
      *
-     * @return array
+     * URL-ийн query string-ээс параметрүүдийг авна.
+     * Жишээ: ?page=1&limit=10 → ['page' => '1', 'limit' => '10']
+     *
+     * @return array<string, mixed> Query параметрүүдийн массив
+     *
+     * @example
+     * $params = $this->getQueryParams();
+     * $page = $params['page'] ?? 1;
      */
     public final function getQueryParams(): array
     {
@@ -60,9 +84,17 @@ abstract class Controller
     }
 
     /**
-     * Бүх attributes-г авах (route params, router, custom attributes)
+     * Бүх request attributes-г авах.
      *
-     * @return array
+     * Attributes нь route parameters, router instance,
+     * middleware-ээс нэмсэн custom attributes зэрэг байж болно.
+     *
+     * @return array<string, mixed> Бүх attributes-ийн массив
+     *
+     * @example
+     * $attrs = $this->getAttributes();
+     * $params = $attrs['params'] ?? [];
+     * $router = $attrs['router'] ?? null;
      */
     public final function getAttributes(): array
     {
@@ -72,9 +104,14 @@ abstract class Controller
     /**
      * Нэг attribute-г авах.
      *
-     * @param string $name
+     * @param string $name Attribute-ийн нэр
      * @param mixed $default Attribute байхгүй бол буцаах default утга
-     * @return mixed
+     * @return mixed Attribute-ийн утга эсвэл default утга
+     *
+     * @example
+     * $userId = $this->getAttribute('params')['id'] ?? null;
+     * $router = $this->getAttribute('router');
+     * $custom = $this->getAttribute('custom', 'default');
      */
     public final function getAttribute(string $name, $default = null)
     {

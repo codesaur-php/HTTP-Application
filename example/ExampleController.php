@@ -5,25 +5,44 @@ namespace codesaur\Http\Application\Example;
 use codesaur\Http\Application\Controller;
 
 /**
- * Class ExampleController
+ * ExampleController Class
  *
  * Багцын Controller base class ашигласан демо controller.
- * GET/POST body, query, attributes зэрэг PSR-7 request өгөгдөлд хандахыг харуулдаг.
+ *
+ * Энэ controller нь GET/POST body, query parameters, attributes
+ * зэрэг PSR-7 request өгөгдөлд хэрхэн хандахыг харуулдаг жишээ юм.
+ *
+ * @package codesaur\Http\Application\Example
+ * @author Narankhuu
+ * @since 1.0.0
  */
 class ExampleController extends Controller
 {
     /**
-     * GET /
+     * Index action - GET /
+     *
+     * Энгийн index page харуулах.
+     *
+     * @return void
      */
-    public function index()
+    public function index(): void
     {
         echo '<br/>It works! [' . self::class . ']<br/><br/>';
     }
 
     /**
-     * GET /hello/{firstname}
+     * Hello action - GET /hello/{firstname}
+     *
+     * Route parameter болон query parameter ашиглах жишээ.
+     *
+     * @param string $firstname Route parameter-аас ирсэн нэр
+     * @return void
+     *
+     * @example
+     * GET /hello/John?lastname=Doe
+     * Output: "Hello John Doe!"
      */
-    public function hello(string $firstname)
+    public function hello(string $firstname): void
     {
         $user = $firstname;
         $params = $this->getQueryParams();
@@ -35,9 +54,19 @@ class ExampleController extends Controller
     }
 
     /**
-     * POST|PUT /post-or-put
+     * Post/Put action - POST|PUT /post-or-put
+     *
+     * POST/PUT request body-г parse хийж боловсруулах жишээ.
+     *
+     * @return void
+     *
+     * @throws \Error Request body-д firstname байхгүй үед
+     *
+     * @example
+     * POST /post-or-put
+     * Body: {"firstname": "John", "lastname": "Doe"}
      */
-    public function post_put()
+    public function post_put(): void
     {
         $payload = $this->getParsedBody();
         if (empty($payload['firstname'])) {
@@ -52,9 +81,17 @@ class ExampleController extends Controller
     }
 
     /**
-     * GET /float/{float:number}
+     * Float action - GET /float/{float:number}
+     *
+     * Typed route parameter (float) ашиглах жишээ.
+     *
+     * @param float $number Route parameter-аас ирсэн float тоо
+     * @return void
+     *
+     * @example
+     * GET /float/3.14
      */
-    public function float(float $number)
+    public function float(float $number): void
     {
         \var_dump($number);
     }

@@ -33,7 +33,7 @@ $autoload = require_once '../vendor/autoload.php';
 $autoload->addPsr4(__NAMESPACE__ . '\\', __DIR__);
 
 /**
- * Application demo класс — middleware, route, controller-ийг бүртгэдэг.
+ * Application demo класс - middleware, route, controller-ийг бүртгэдэг.
  */
 $application = new class extends Application
 {

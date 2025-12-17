@@ -2,10 +2,10 @@
 
 namespace codesaur\Http\Application;
 
-use codesaur\Http\Message\ReasonPrhase;
+use codesaur\Http\Message\ReasonPhrase;
 
 /**
- * Class ExceptionHandler
+ * ExceptionHandler Class
  *
  * Энэ класс нь ExceptionHandlerInterface–ийг хэрэгжүүлж,
  * системд гарсан аливаа Exception / Error–ийг нэг цэгээс хүлээн авч,
@@ -19,6 +19,9 @@ use codesaur\Http\Message\ReasonPrhase;
  *  - CODESAUR_DEVELOPMENT = true үед trace мэдээлэл харуулах
  *
  * @package codesaur\Http\Application
+ * @author Narankhuu
+ * @since 1.0.0
+ * @implements ExceptionHandlerInterface
  */
 class ExceptionHandler implements ExceptionHandlerInterface
 {
@@ -28,10 +31,20 @@ class ExceptionHandler implements ExceptionHandlerInterface
      * Application::use(new ExceptionHandler()) гэж бүртгэгдсэн үед
      * PHP-ийн set_exception_handler() механизмаар автоматаар дуудагдана.
      *
-     * @param \Throwable $throwable Илэрсэн Exception / Error
+     * Энэ функц нь:
+     * 1. Алдааны кодыг шалгаж HTTP статус код тохируулна
+     * 2. Алдааг error_log руу бичнэ
+     * 3. HTML error page үүсгэн хэрэглэгчид харуулна
+     * 4. Development mode дээр stack trace харуулна
+     *
+     * @param \Throwable $throwable Илэрсэн Exception / Error объект
      * @return void
+     *
+     * @example
+     * throw new \Error("Not Found", 404);
+     * throw new \Exception("Server Error", 500);
      */
-    public function exception(\Throwable $throwable)
+    public function exception(\Throwable $throwable): void
     {
         // Error code, message, exception classname
         $code = $throwable->getCode();
@@ -43,13 +56,14 @@ class ExceptionHandler implements ExceptionHandlerInterface
          *
          * Жишээ:
          *   throw new \Error("Not Found", 404);
+         *   throw new \Exception("Unauthorized", 401);
          */
         if ($code != 0) {
             $status = "STATUS_$code";
-            $reasonPhrase = ReasonPrhase::class;
+            $reasonPhraseClass = ReasonPhrase::class;
 
             // ReasonPhrase class-д тухайн статус код байвал http_response_code() дуудах
-            if (\defined("$reasonPhrase::$status") && !\headers_sent()) {
+            if (\defined("$reasonPhraseClass::$status") && !\headers_sent()) {
                 \http_response_code($code);
             }
 
@@ -64,11 +78,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
          * Хэрэглэгчид үзүүлэх энгийн HTML хуудас.
          * Энэ нь framework-н default error page юм.
          */
-        $host = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off')
-            || ($_SERVER['SERVER_PORT'] ?? null) == 443)
-            ? 'https://' : 'http://';
-
-        $host .= $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $host = $this->getHost();
 
         echo '<!doctype html>'
             . '<html lang="en">'
@@ -84,5 +94,24 @@ class ExceptionHandler implements ExceptionHandlerInterface
             echo '<hr>';
             \var_dump($throwable->getTrace());
         }
+    }
+
+    /**
+     * HTTP host URL-г тодорхойлох.
+     *
+     * HTTPS эсвэл HTTP протоколыг автоматаар тодорхойлж,
+     * host name-ийг нэгтгэн буцаана.
+     *
+     * @return string Protocol + host (жишээ: https://example.com)
+     */
+    private function getHost(): string
+    {
+        $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off')
+            || ($_SERVER['SERVER_PORT'] ?? null) == 443;
+
+        $protocol = $isHttps ? 'https://' : 'http://';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+        return $protocol . $host;
     }
 }

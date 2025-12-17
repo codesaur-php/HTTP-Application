@@ -1,11 +1,22 @@
+# Apache mod_rewrite модуль идэвхтэй эсэхийг шалгах
 <IfModule mod_rewrite.c>
+# URL rewrite механизмыг идэвхжүүлэх
 RewriteEngine On
 
+# Хүсэлтийн файл бодит файл биш эсэхийг шалгах (!-f = файл биш)
 RewriteCond %{REQUEST_FILENAME} !-f
+# Хүсэлтийн файл бодит хавтас биш эсэхийг шалгах (!-d = хавтас биш)
 RewriteCond %{REQUEST_FILENAME} !-d
 
+# Дээрх нөхцөлүүд биелсэн бол бүх хүсэлтийг index.php руу дамжуулах
+# ^(.*)$ - бүх path-г авна
+# index.php/$1 - index.php руу дамжуулна ($1 нь анхны path)
+# [L] - Last rule, энэ дүрэм хэрэгжсэний дараа зогсоно
 RewriteRule ^(.*)$ index.php/$1 [L]
 </IfModule>
+
+# mod_rewrite модуль идэвхгүй бол
 <IfModule !mod_rewrite.c>
+# Хавтасны жагсаалтыг харуулахыг хориглох (аюулгүй байдлын зорилгоор)
 Options -Indexes
 </IfModule>
