@@ -49,8 +49,14 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
 
-      - name: Run PHPUnit tests
+      - name: Run PHPUnit tests (Linux/macOS)
+        if: runner.os != 'Windows'
         run: vendor/bin/phpunit --configuration phpunit.xml
+
+      - name: Run PHPUnit tests (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: vendor\bin\phpunit --configuration phpunit.xml
 
       - name: Generate coverage report
         if: matrix.os == 'ubuntu-latest' && matrix.php-version == '8.3'

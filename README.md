@@ -8,13 +8,6 @@
 
 ---
 
-## 📚 Документаци
-
-- 📘 [API Documentation](API.md) - Бүрэн API удирдлага
-- 🔍 [Code Review](REVIEW.md) - Код шалгалтын тайлан
-
----
-
 `codesaur/http-application` нь PSR-7 (HTTP Message) ба PSR-15 (HTTP Server RequestHandler/Middleware) стандартууд дээр суурилсан **минималист**, **өндөр уян хатан**, **middleware суурьтай** Application цөм юм.
 
 Та хүсвэл:
