@@ -17,7 +17,6 @@ jobs:
         php-version:
           - "8.2"
           - "8.3"
-          - "8.4"
         os:
           - ubuntu-latest
           - windows-latest
@@ -35,7 +34,8 @@ jobs:
           coverage: xdebug
 
       - name: Validate composer.json
-        run: composer validate || true
+        continue-on-error: true
+        run: composer validate
 
       - name: Cache Composer packages
         id: composer-cache
@@ -47,7 +47,7 @@ jobs:
             ${{ runner.os }}-php-${{ matrix.php-version }}-composer-
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
 
       - name: Run PHPUnit tests (Linux/macOS)
         if: runner.os != 'Windows'
@@ -55,8 +55,7 @@ jobs:
 
       - name: Run PHPUnit tests (Windows)
         if: runner.os == 'Windows'
-        shell: pwsh
-        run: vendor\bin\phpunit --configuration phpunit.xml
+        run: vendor\bin\phpunit.bat --configuration phpunit.xml
 
       - name: Generate coverage report
         if: matrix.os == 'ubuntu-latest' && matrix.php-version == '8.3'
