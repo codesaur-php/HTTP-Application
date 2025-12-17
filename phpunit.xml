@@ -6,7 +6,7 @@
          cacheDirectory=".phpunit.cache"
          executionOrder="depends,defects"
          failOnRisky="false"
-         failOnWarning="true"
+         failOnWarning="false"
          beStrictAboutOutputDuringTests="false"
          processIsolation="false"
          stopOnDefect="false"

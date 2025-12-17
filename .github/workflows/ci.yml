@@ -47,7 +47,7 @@ jobs:
             ${{ runner.os }}-php-${{ matrix.php-version }}-composer-
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
+        run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Run PHPUnit tests (Linux/macOS)
         if: runner.os != 'Windows'
@@ -55,6 +55,7 @@ jobs:
 
       - name: Run PHPUnit tests (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: vendor\bin\phpunit.bat --configuration phpunit.xml
 
       - name: Generate coverage report
