@@ -4,7 +4,7 @@
 ![PHP Version](https://img.shields.io/badge/php-%3E%3D8.2-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
-**PHP 8.2+ · PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application цөм**
+PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application цөм**
 
 ---
 
