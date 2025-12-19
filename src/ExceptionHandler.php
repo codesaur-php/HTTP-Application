@@ -7,8 +7,8 @@ use codesaur\Http\Message\ReasonPhrase;
 /**
  * ExceptionHandler Class
  *
- * Энэ класс нь ExceptionHandlerInterface–ийг хэрэгжүүлж,
- * системд гарсан аливаа Exception / Error–ийг нэг цэгээс хүлээн авч,
+ * Энэ класс нь ExceptionHandlerInterface-ийг хэрэгжүүлж,
+ * системд гарсан аливаа Exception / Error-ийг нэг цэгээс хүлээн авч,
  * зохих HTTP статус кодтой хариу үүсгэх зориулалттай, lightweight алдааны боловсруулагч юм.
  *
  * Үндсэн үүрэг:
@@ -54,15 +54,21 @@ class ExceptionHandler implements ExceptionHandlerInterface
         /**
          * Алдааны код нь 0 биш үед HTTP статус код тохируулахыг оролдоно.
          *
+         * Exception/Error-ийн getCode() нь HTTP статус код байвал
+         * ReasonPhrase class-д тодорхойлогдсон эсэхийг шалгаж,
+         * зөв бол http_response_code() дуудаж HTTP загварыг тохируулна.
+         *
          * Жишээ:
          *   throw new \Error("Not Found", 404);
          *   throw new \Exception("Unauthorized", 401);
+         *   throw new \Exception("Internal Server Error", 500);
          */
         if ($code != 0) {
             $status = "STATUS_$code";
             $reasonPhraseClass = ReasonPhrase::class;
 
             // ReasonPhrase class-д тухайн статус код байвал http_response_code() дуудах
+            // Headers аль хэдийн илгээгдсэн бол тохируулахгүй
             if (\defined("$reasonPhraseClass::$status") && !\headers_sent()) {
                 \http_response_code($code);
             }
@@ -102,7 +108,12 @@ class ExceptionHandler implements ExceptionHandlerInterface
      * HTTPS эсвэл HTTP протоколыг автоматаар тодорхойлж,
      * host name-ийг нэгтгэн буцаана.
      *
-     * @return string Protocol + host (жишээ: https://example.com)
+     * Протоколыг дараах байдлаар тодорхойлно:
+     * - $_SERVER['HTTPS'] байгаа бөгөөд 'off' биш бол HTTPS
+     * - $_SERVER['SERVER_PORT'] == 443 бол HTTPS
+     * - Бусад тохиолдолд HTTP
+     *
+     * @return string Protocol + host (жишээ: https://example.com, http://localhost)
      */
     private function getHost(): string
     {

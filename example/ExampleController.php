@@ -22,8 +22,13 @@ class ExampleController extends Controller
      * Index action - GET /
      *
      * Энгийн index page харуулах.
+     * Энэ нь application амжилттай ажиллаж байгааг шалгах энгийн тест endpoint юм.
      *
      * @return void
+     *
+     * @example
+     * GET /
+     * Output: "It works! [codesaur\Http\Application\Example\ExampleController]"
      */
     public function index(): void
     {
@@ -57,6 +62,8 @@ class ExampleController extends Controller
      * Post/Put action - POST|PUT /post-or-put
      *
      * POST/PUT request body-г parse хийж боловсруулах жишээ.
+     * Request body нь JSON эсвэл form-urlencoded байж болно.
+     * getParsedBody() method нь парс хийгдсэн массив буцаана.
      *
      * @return void
      *
@@ -64,7 +71,15 @@ class ExampleController extends Controller
      *
      * @example
      * POST /post-or-put
+     * Content-Type: application/json
      * Body: {"firstname": "John", "lastname": "Doe"}
+     * Output: "Hello John Doe!"
+     *
+     * @example
+     * PUT /post-or-put
+     * Content-Type: application/x-www-form-urlencoded
+     * Body: firstname=Jane&lastname=Smith
+     * Output: "Hello Jane Smith!"
      */
     public function post_put(): void
     {
@@ -84,12 +99,19 @@ class ExampleController extends Controller
      * Float action - GET /float/{float:number}
      *
      * Typed route parameter (float) ашиглах жишээ.
+     * Router нь URL-аас float утгыг автоматаар parse хийж,
+     * Controller action-ийн аргумент болгон дамжуулна.
      *
      * @param float $number Route parameter-аас ирсэн float тоо
      * @return void
      *
      * @example
      * GET /float/3.14
+     * Output: float(3.14)
+     *
+     * @example
+     * GET /float/42.5
+     * Output: float(42.5)
      */
     public function float(float $number): void
     {

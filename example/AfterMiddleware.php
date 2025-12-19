@@ -30,9 +30,21 @@ class AfterMiddleware implements MiddlewareInterface
      * Handler-г дуудаж, response дээр end_time header нэмж,
      * processing хугацааг хэвлэнэ.
      *
-     * @param ServerRequestInterface $request PSR-7 ServerRequest
-     * @param RequestHandlerInterface $handler Дараагийн handler
-     * @return ResponseInterface PSR-7 Response
+     * Энэ middleware нь:
+     * 1. Handler-г дуудаж response авна
+     * 2. Response дээр "end_time" header нэмнэ
+     * 3. BeforeMiddleware-ээс ирсэн start_time-ийг ашиглан duration тооцоолж хэвлэнэ
+     *
+     * @param ServerRequestInterface $request PSR-7 ServerRequest объект
+     * @param RequestHandlerInterface $handler Дараагийн handler (route handler)
+     * @return ResponseInterface PSR-7 Response объект (end_time header-тэй)
+     *
+     * @example
+     * // Response headers-д end_time нэмэгдэнэ
+     * $endTime = $response->getHeaderLine('end_time'); // float timestamp string
+     *
+     * // HTML output дээр duration хэвлэгдэнэ
+     * // "Request started at {1234567890.1234} and finished in {1234567890.5678} (Duration: 0.4444 seconds)"
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {

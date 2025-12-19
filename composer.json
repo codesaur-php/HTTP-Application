@@ -1,6 +1,6 @@
 {
     "name": "codesaur/http-application",
-    "description": "PHP 8.2+ · PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application цөм",
+    "description": "PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application цөм",
     "keywords": [
         "http", "application", "http application", "router", "server request handler", "psr-7", "psr-15", "mongol", "mongolia", "монгол", "codesaur", "narankhuu", "coden", "кодзавр", "наранхүү", "коден"
     ],

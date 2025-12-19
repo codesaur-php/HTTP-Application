@@ -124,7 +124,7 @@ $app->use(new CustomRouter());
 
 #### `public function handle(ServerRequestInterface $request): ResponseInterface`
 
-PSR-15 RequestHandlerInterface::handle()–ийн хэрэгжилт.
+PSR-15 RequestHandlerInterface::handle()-ийн хэрэгжилт.
 
 Энэ функц нь HTTP хүсэлтийг боловсруулах бүрэн процесс-ийг гүйцэтгэнэ:
 
@@ -133,6 +133,16 @@ PSR-15 RequestHandlerInterface::handle()–ийн хэрэгжилт.
 3. Middleware-үүдийг дарааллаар нь ажиллуулна (onion model)
 4. Тохирох маршрут олдох юм бол Controller/action эсвэл Closure-г дуудаж Response үүсгэнэ
 5. Response-г буцаана (ResponseInterface биш бол NonBodyResponse fallback)
+
+**Route Matching:**
+- URI path болон HTTP method-оор маршрут олно
+- Route parameters-г Request attributes-д нэмнэ (жишээ: `/user/{int:id}` → `$request->getAttribute('params')['id']`)
+- Router instance-г Request attribute-д нэмнэ (`$request->getAttribute('router')`)
+
+**Route Execution:**
+- Closure route: `$app->GET('/hello', function($req) { ... })`
+- Controller/action route: `$app->GET('/user/{id}', [UserController::class, 'show'])`
+- Route parameters автоматаар action method-ийн аргумент болгон дамжуулна
 
 **Parameters:**
 - `ServerRequestInterface $request` - PSR-7 ServerRequest объект
@@ -192,12 +202,15 @@ Controller үүсэхэд PSR-7 ServerRequest автоматаар дамжин�
 
 Request объектыг авах.
 
+Controller-ийн бүх method-үүдэд PSR-7 ServerRequest объектод хандах боломж олгоно.
+
 **Returns:** `ServerRequestInterface` - PSR-7 ServerRequest объект
 
 **Жишээ:**
 ```php
 $request = $this->getRequest();
-$method = $request->getMethod();
+$method = $request->getMethod(); // GET, POST, PUT, DELETE, etc.
+$uri = $request->getUri()->getPath(); // /user/123
 ```
 
 ---
@@ -258,6 +271,8 @@ $router = $attrs['router'] ?? null;
 
 Нэг attribute-г авах.
 
+Request attributes нь route parameters, router instance, middleware-ээс нэмсэн custom attributes зэрэг байж болно.
+
 **Parameters:**
 - `string $name` - Attribute-ийн нэр
 - `mixed $default` - Attribute байхгүй бол буцаах default утга
@@ -266,15 +281,15 @@ $router = $attrs['router'] ?? null;
 
 **Жишээ:**
 ```php
-// Route parameters
+// Route parameters авах
 $params = $this->getAttribute('params');
 $userId = $params['id'] ?? null;
 
-// Router instance
+// Router instance авах
 $router = $this->getAttribute('router');
 
-// Custom attribute with default
-$custom = $this->getAttribute('custom', 'default');
+// Middleware-ээс нэмсэн custom attribute
+$startTime = $this->getAttribute('start_time', 0);
 ```
 
 ---
@@ -284,7 +299,7 @@ $custom = $this->getAttribute('custom', 'default');
 **Namespace:** `codesaur\Http\Application`  
 **Implements:** `codesaur\Http\Application\ExceptionHandlerInterface`
 
-Энэ класс нь ExceptionHandlerInterface–ийг хэрэгжүүлж, системд гарсан аливаа Exception / Error–ийг нэг цэгээс хүлээн авч, зохих HTTP статус кодтой хариу үүсгэх зориулалттай, lightweight алдааны боловсруулагч юм.
+Энэ класс нь ExceptionHandlerInterface-ийг хэрэгжүүлж, системд гарсан аливаа Exception / Error-ийг нэг цэгээс хүлээн авч, зохих HTTP статус кодтой хариу үүсгэх зориулалттай, lightweight алдааны боловсруулагч юм.
 
 ### Тайлбар
 
@@ -305,6 +320,7 @@ Application::use(new ExceptionHandler()) гэж бүртгэгдсэн үед PH
 
 Энэ функц нь:
 1. Алдааны кодыг шалгаж HTTP статус код тохируулна
+   - Exception/Error-ийн `getCode()` нь HTTP статус код байвал ReasonPhrase class-д тодорхойлогдсон эсэхийг шалгаж, зөв бол `http_response_code()` дуудаж HTTP загварыг тохируулна
 2. Алдааг error_log руу бичнэ
 3. HTML error page үүсгэн хэрэглэгчид харуулна
 4. Development mode дээр stack trace харуулна
@@ -339,7 +355,12 @@ HTTP host URL-г тодорхойлох.
 
 HTTPS эсвэл HTTP протоколыг автоматаар тодорхойлж, host name-ийг нэгтгэн буцаана.
 
-**Returns:** `string` - Protocol + host (жишээ: https://example.com)
+Протоколыг дараах байдлаар тодорхойлно:
+- `$_SERVER['HTTPS']` байгаа бөгөөд 'off' биш бол HTTPS
+- `$_SERVER['SERVER_PORT'] == 443` бол HTTPS
+- Бусад тохиолдолд HTTP
+
+**Returns:** `string` - Protocol + host (жишээ: https://example.com, http://localhost)
 
 ---
 
@@ -352,7 +373,7 @@ Application түвшний алдааны боловсруулагч интер�
 
 ### Тайлбар
 
-Энэ интерфэйсийг хэрэгжүүлсэн класс нь системд гарсан аливаа Exception / Error–ийг нэг цэгээс хүлээн авч хүссэн хэлбэрээр боловсруулах боломжтой болно.
+Энэ интерфэйсийг хэрэгжүүлсэн класс нь системд гарсан аливаа Exception / Error-ийг нэг цэгээс хүлээн авч хүссэн хэлбэрээр боловсруулах боломжтой болно.
 
 Application::use(new ExceptionHandler()) гэж бүртгэх үед PHP-ийн set_exception_handler() механизмаар автоматаар дуудагддаг.
 
@@ -381,8 +402,14 @@ class MyCustomHandler implements ExceptionHandlerInterface
 {
     public function exception(\Throwable $throwable): void
     {
-        http_response_code($throwable->getCode() ?: 500);
-        error_log($throwable->getMessage());
+        // HTTP статус код тохируулах
+        $code = $throwable->getCode() ?: 500;
+        \http_response_code($code);
+
+        // Лог бичих
+        \error_log($throwable->getMessage());
+
+        // Error page харуулах
         echo "Error: " . $throwable->getMessage();
     }
 }
@@ -463,9 +490,9 @@ MIT License
 
 ---
 
-## 👨‍💻 Хөгжүүлэгч
+# 👨‍💻 Зохиогч
 
 Narankhuu  
 📧 codesaur@gmail.com  
-📱 +976 99000287  
+📲 [+976 99000287](https://wa.me/97699000287)  
 🌐 https://github.com/codesaur

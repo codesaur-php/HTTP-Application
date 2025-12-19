@@ -138,7 +138,7 @@ class Application implements RequestHandlerInterface
     /**
      * {@inheritdoc}
      *
-     * PSR-15 RequestHandlerInterface::handle()–ийн хэрэгжилт.
+     * PSR-15 RequestHandlerInterface::handle()-ийн хэрэгжилт.
      *
      * Энэ функц нь HTTP хүсэлтийг боловсруулах бүрэн процесс-ийг гүйцэтгэнэ:
      *
@@ -166,26 +166,31 @@ class Application implements RequestHandlerInterface
             $path = \rawurldecode($request->getUri()->getPath());
 
             // Document root-с гадуур байрлах үед замыг зөв тооцоолох
+            // Жишээ: /subdirectory/index.php → /subdirectory → path-г зөв тохируулах
             if (($lngth = \strlen(\dirname($request->getServerParams()['SCRIPT_NAME']))) > 1) {
                 $path = '/' . \ltrim(\substr($path, $lngth), '/');
             }
 
+            // Хоосон path-г root path болгох
             if ($path === '') {
                 $path = '/';
             }
 
-            // Route match хийх
+            // Route match хийх - URI path болон HTTP method-оор маршрут олох
             $rule = $this->router->match($path, $request->getMethod());
             if (!$rule instanceof Callback) {
                 throw new \Error("Unknown route pattern [$path]", 404);
             }
 
             // Route parameters → Request attributes
+            // Жишээ: /user/{int:id} → ['id' => 123] → $request->getAttribute('params')['id']
             $params = [];
             foreach ($rule->getParameters() as $param => $value) {
                 $params[$param] = $value;
             }
 
+            // Request attributes-д route parameters болон router instance нэмэх
+            // Controller-үүд эдгээр attributes-г ашиглаж болно
             $request = $request
                 ->withAttribute('params', $params)
                 ->withAttribute('router', $this->router);
@@ -194,12 +199,14 @@ class Application implements RequestHandlerInterface
 
             /**
              * 1) Closure route
+             * Жишээ: $app->GET('/hello', function($req) { ... });
              */
             if ($callable instanceof \Closure) {
                 $response = \call_user_func_array($callable, [$request]);
 
             /**
              * 2) Controller/action route
+             * Жишээ: $app->GET('/user/{id}', [UserController::class, 'show']);
              */
             } else {
                 $controllerClass = $callable[0];
@@ -215,6 +222,8 @@ class Application implements RequestHandlerInterface
                     );
                 }
 
+                // Route parameters-г action method-ийн аргумент болгон дамжуулна
+                // Жишээ: /user/{int:id} → UserController::show(int $id)
                 $response = \call_user_func_array([$controller, $action], $params);
             }
 
@@ -231,10 +240,19 @@ class Application implements RequestHandlerInterface
          * Middleware queue-г PSR-15 стандартын дагуу дараалж гүйцэтгэгч дотоод Runner класс.
          *
          * Энэ нь anonymous class бөгөөд middleware chain-ийг onion model-ээр ажиллуулна.
+         * Runner нь middleware queue-г дарааллаар нь ажиллуулж, эцэст нь route matcher callback-г
+         * дуудаж Controller/action эсвэл Closure route-г гүйцэтгэнэ.
+         *
+         * @var RequestHandlerInterface
          */
         $runner = new class ($callbacks) implements RequestHandlerInterface {
             /**
              * Middleware queue (array of MiddlewareInterface or Closure).
+             *
+             * Queue нь дараах төрлүүдийг агуулна:
+             * - PSR-15 MiddlewareInterface: process($request, $handler) method-тэй
+             * - Closure: function($request, $handler) хэлбэрийн middleware
+             * - callable: Эцсийн route matcher callback function($request)
              *
              * @var array<int, MiddlewareInterface|\Closure|callable>
              */
@@ -242,6 +260,8 @@ class Application implements RequestHandlerInterface
 
             /**
              * Runner конструктор.
+             *
+             * Middleware queue-г хадгалж, дараагийн handle() дуудлагад ашиглана.
              *
              * @param array<int, MiddlewareInterface|\Closure|callable> $queue Middleware queue
              */
@@ -253,8 +273,13 @@ class Application implements RequestHandlerInterface
             /**
              * Middleware-ийг дарааллаар нь ажиллуулах (PSR-15 onion model).
              *
-             * @param ServerRequestInterface $request PSR-7 ServerRequest
-             * @return ResponseInterface PSR-7 Response
+             * Энэ метод нь queue-н дараагийн middleware-г авч ажиллуулна:
+             * - PSR-15 MiddlewareInterface бол process() method-г дуудна
+             * - Closure бол ($request, $this) аргументуудаар дуудна
+             * - callable бол ($request) аргументоор дуудна (route matcher)
+             *
+             * @param ServerRequestInterface $request PSR-7 ServerRequest объект
+             * @return ResponseInterface PSR-7 Response объект
              */
             public function handle(ServerRequestInterface $request): ResponseInterface
             {

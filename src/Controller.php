@@ -41,7 +41,14 @@ abstract class Controller
     /**
      * Request объектыг авах.
      *
+     * Controller-ийн бүх method-үүдэд PSR-7 ServerRequest объектод хандах боломж олгоно.
+     *
      * @return ServerRequestInterface PSR-7 ServerRequest объект
+     *
+     * @example
+     * $request = $this->getRequest();
+     * $method = $request->getMethod(); // GET, POST, PUT, DELETE, etc.
+     * $uri = $request->getUri()->getPath(); // /user/123
      */
     public final function getRequest(): ServerRequestInterface
     {
@@ -104,14 +111,23 @@ abstract class Controller
     /**
      * Нэг attribute-г авах.
      *
+     * Request attributes нь route parameters, router instance,
+     * middleware-ээс нэмсэн custom attributes зэрэг байж болно.
+     *
      * @param string $name Attribute-ийн нэр
      * @param mixed $default Attribute байхгүй бол буцаах default утга
      * @return mixed Attribute-ийн утга эсвэл default утга
      *
      * @example
-     * $userId = $this->getAttribute('params')['id'] ?? null;
+     * // Route parameters авах
+     * $params = $this->getAttribute('params');
+     * $userId = $params['id'] ?? null;
+     *
+     * // Router instance авах
      * $router = $this->getAttribute('router');
-     * $custom = $this->getAttribute('custom', 'default');
+     *
+     * // Middleware-ээс нэмсэн custom attribute
+     * $startTime = $this->getAttribute('start_time', 0);
      */
     public final function getAttribute(string $name, $default = null)
     {

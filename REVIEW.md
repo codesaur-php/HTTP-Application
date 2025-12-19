@@ -7,15 +7,15 @@
 ## 📋 Ерөнхий мэдээлэл
 
 - **Package нэр:** codesaur/http-application
-- **PHP хувилбар:** >= 8.2
+- **PHP хувилбар:** ^8.2.1
 - **Лиценз:** MIT
 - **Хөгжүүлэгч:** Narankhuu (codesaur@gmail.com)
-- **PSR-7 хэрэгжилт:** codesaur/http-message ашиглана
+- **PSR-7 хэрэгжилт:** Аливаа PSR-7 compliant implementation ашиглаж болно. Бүрэн дэмжинэ
 - **PSR-15 хэрэгжилт:** Бүрэн дэмжинэ
 - **Dependencies:** 
-  - codesaur/router (>=4.4.2)
-  - codesaur/http-message (>=1.8.0)
-  - psr/http-server-middleware (>=1.0.2)
+  - codesaur/router (^5.0.0)
+  - codesaur/http-message (^3.0.0)
+  - psr/http-server-middleware (^1.0.2)
 
 ---
 
@@ -32,7 +32,7 @@
 ✅ **Хэрэгжүүлсэн interface-үүд:**
 - `RequestHandlerInterface` (Application класс)
 - `MiddlewareInterface` (дэмжинэ)
-- PSR-7 `ServerRequestInterface` (codesaur/http-message-ээс)
+- PSR-7 `ServerRequestInterface` (аливаа PSR-7 implementation-ээс)
 
 ### 2. Цэвэр Архитектур
 
@@ -57,9 +57,11 @@ Application (implements RequestHandlerInterface)
 ✅ **Онцлог:**
 - Бүх класс, метод, property-д бүрэн PHPDoc тайлбар бичигдсэн
 - Parameter, return type, exception-үүдийг тодорхой заасан
-- @example annotation ашигласан
+- @example annotation ашигласан (олон жишээтэй)
 - Монгол хэл дээр тайлбар байна
 - API.md файл байна
+- Дэлгэрэнгүй тайлбар, жишээнүүд, execution flow тайлбарласан
+- Anonymous class-ууд, middleware chain, route matching зэрэг нарийн хэсгүүд тайлбарлагдсан
 
 ### 4. Уян Хатан Middleware Систем
 
@@ -157,7 +159,7 @@ Application (implements RequestHandlerInterface)
 
 ✅ **Онцлог:**
 - README.md маш сайн бичигдсэн (347 мөр)
-- API.md файл байна (473 мөр)
+- API.md файл байна (498 мөр)
 - PHPDoc бүрэн байна
 - Example файлууд байна
 - OS тус бүрээр тест ажиллуулах заавар байна
@@ -214,7 +216,6 @@ Application (implements RequestHandlerInterface)
 
 💡 **Санал:**
 - CHANGELOG.md нэмэх (version history)
-- CONTRIBUTING.md нэмэх
 - Migration guide (version upgrade)
 
 ### 5. Performance
@@ -246,10 +247,11 @@ Application (implements RequestHandlerInterface)
    - Single Responsibility Principle дагана
 
 3. **Documentation:** ⭐⭐⭐⭐⭐ (5/5)
-   - PHPDoc бүрэн байна
+   - PHPDoc бүрэн байна, дэлгэрэнгүй тайлбар, жишээнүүдтэй
    - README.md маш сайн бичигдсэн
    - API.md файл байна
    - Жишээ код агуулна
+   - Бүх method-үүдэд @example tag-үүд байна
 
 4. **Testing:** ⭐⭐⭐⭐⭐ (5/5)
    - 64 тест байна
@@ -324,7 +326,7 @@ Package нь дараах use case-үүдэд тохиромжтой:
 | Онцлог | codesaur/http-application | Slim Framework | Laminas Mezzio |
 |--------|---------------------------|----------------|----------------|
 | PSR-15 Compliance | ✅ Бүрэн | ✅ Бүрэн | ✅ Бүрэн |
-| PSR-7 Compliance | ✅ (codesaur/http-message) | ✅ Бүрэн | ✅ Бүрэн |
+| PSR-7 Compliance | ✅ Бүрэн | ✅ Бүрэн | ✅ Бүрэн |
 | Middleware System | ✅ Onion model | ✅ Onion model | ✅ Onion model |
 | Router Integration | ✅ codesaur/router | ✅ Built-in | ✅ Built-in |
 | Controller Base | ✅ Abstract class | ❌ Байхгүй | ✅ Interface |
@@ -415,8 +417,9 @@ Package нь дараах use case-үүдэд тохиромжтой:
    - MiddlewareInterface дэмжинэ
 
 4. **PSR-7 HTTP Message**
-   - codesaur/http-message ашиглана
-   - ServerRequestInterface ашиглана
+   - Аливаа PSR-7 compliant implementation ашиглаж болно
+   - ServerRequestInterface, ResponseInterface интерфэйсүүд ашиглана
+   - codesaur/http-message нь зөвхөн жишээ болон fallback (NonBodyResponse)-д ашиглагддаг
 
 ### ⚠️ Шалгах Зүйлс
 

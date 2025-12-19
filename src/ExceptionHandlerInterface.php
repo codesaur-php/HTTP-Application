@@ -8,7 +8,7 @@ namespace codesaur\Http\Application;
  * Application түвшний алдааны боловсруулагч интерфэйс.
  *
  * Энэ интерфэйсийг хэрэгжүүлсэн класс нь
- * системд гарсан аливаа Exception / Error–ийг нэг цэгээс хүлээн авч
+ * системд гарсан аливаа Exception / Error-ийг нэг цэгээс хүлээн авч
  * хүссэн хэлбэрээр боловсруулах боломжтой болно.
  *
  * Application::use(new ExceptionHandler()) гэж бүртгэх үед
@@ -33,13 +33,22 @@ interface ExceptionHandlerInterface
      * HTTP статус код тохируулах, лог бичих, error page үүсгэх
      * зэрэг боловсруулалт хийх үүрэгтэй.
      *
+     * Application::use(new ExceptionHandler()) гэж бүртгэх үед
+     * PHP-ийн set_exception_handler() механизмаар автоматаар дуудагддаг.
+     *
      * @param \Throwable $throwable Илэрсэн Exception эсвэл Error объект
      * @return void
      *
      * @example
      * public function exception(\Throwable $throwable): void {
-     *     http_response_code($throwable->getCode() ?: 500);
-     *     error_log($throwable->getMessage());
+     *     // HTTP статус код тохируулах
+     *     $code = $throwable->getCode() ?: 500;
+     *     \http_response_code($code);
+     *
+     *     // Лог бичих
+     *     \error_log($throwable->getMessage());
+     *
+     *     // Error page харуулах
      *     echo "Error: " . $throwable->getMessage();
      * }
      */

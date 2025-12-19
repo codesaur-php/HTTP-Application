@@ -27,6 +27,13 @@ class ExampleRouter extends Router
      * ExampleRouter конструктор.
      *
      * Бүх жишээ маршрутуудыг энд бүртгэнэ.
+     * Энэ нь codesaur/router багцын Router классын бүх боломжуудыг харуулдаг:
+     * - Dynamic route parameters: {firstname}, {id}
+     * - Typed parameters: {int:id}, {uint:b}, {float:number}
+     * - Multi-method routes: POST_PUT, GET_POST_PUT_DELETE_OPTIONS
+     * - Named routes: ->name('route_name')
+     * - Closure routes: function($req) { ... }
+     * - Controller routes: [Controller::class, 'action']
      */
     public function __construct()
     {

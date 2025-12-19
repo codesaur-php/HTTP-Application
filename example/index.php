@@ -34,9 +34,24 @@ $autoload->addPsr4(__NAMESPACE__ . '\\', __DIR__);
 
 /**
  * Application demo класс - middleware, route, controller-ийг бүртгэдэг.
+ *
+ * Энэ нь anonymous class бөгөөд Application-аас удамшиж,
+ * middleware, router, route-үүдийг бүртгэх жишээг харуулдаг.
+ *
+ * @var Application
  */
 $application = new class extends Application
 {
+    /**
+     * Application demo конструктор.
+     *
+     * Энд дараах бүртгэлүүд хийгдэнэ:
+     * 1. Exception handler бүртгэх
+     * 2. Middleware-үүд бүртгэх (Before, After, Onion)
+     * 3. Router бүртгэх (ExampleRouter)
+     * 4. Route-үүд бүртгэх (GET, POST, Closure, Controller)
+     * 5. Tail middleware бүртгэх (route execution info хэвлэх)
+     */
     public function __construct()
     {
         parent::__construct();
@@ -85,7 +100,15 @@ $application = new class extends Application
         });
 
         /**
-         * Tail middleware – route гүйцэтгэлийн мэдээлэл хэвлэх.
+         * Tail middleware - route гүйцэтгэлийн мэдээлэл хэвлэх.
+         *
+         * Энэ middleware нь route match хийж, ямар controller/action эсвэл
+         * Closure дуудагдаж байгааг консолд хэвлэнэ.
+         * Энэ нь debugging болон development-д тустай.
+         *
+         * @param ServerRequestInterface $request PSR-7 ServerRequest
+         * @param RequestHandlerInterface $handler Дараагийн handler
+         * @return ResponseInterface PSR-7 Response
          */
         $this->use(function (ServerRequestInterface $request, RequestHandlerInterface $handler) {
             $res = $handler->handle($request);
@@ -124,5 +147,13 @@ $application = new class extends Application
     }
 };
 
-// Application-г ажиллуулах
+/**
+ * Application-г ажиллуулах.
+ *
+ * ServerRequest-г global PHP superglobals ($_SERVER, $_GET, $_POST, etc.)-аас
+ * үүсгэж, Application::handle() method-г дуудаж HTTP хүсэлтийг боловсруулна.
+ *
+ * @see ServerRequest::initFromGlobal()
+ * @see Application::handle()
+ */
 $application->handle((new ServerRequest())->initFromGlobal());

@@ -1,10 +1,10 @@
 # 🦖 codesaur/http-application
 
-![CI](https://github.com/codesaur-php/HTTP-Application/workflows/CI/badge.svg)
-![PHP Version](https://img.shields.io/badge/php-%3E%3D8.2-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+[![CI](https://github.com/codesaur-php/HTTP-Application/workflows/CI/badge.svg)](https://github.com/codesaur-php/HTTP-Application/actions)
+[![PHP Version](https://img.shields.io/badge/php-%5E8.2.1-777BB4.svg?logo=php)](https://www.php.net/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application цөм**
+**PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application цөм**
 
 ---
 
@@ -18,7 +18,7 @@ PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application �
 - Exception handler бүртгэх  
 - Custom request attributes ашиглах  
 
-гэ мэтээр өөрийн хүссэн бүтэцтэй web application-ийг хэдхэн мөр кодоор босгох боломжтой.
+гэх мэтээр өөрийн хүссэн бүтэцтэй web application-ийг хэдхэн мөр кодоор босгох боломжтой.
 
 ---
 
@@ -75,7 +75,7 @@ HTTP-Application/
  ├── .github/
  │   └── workflows/
  │       └── ci.yml              # GitHub Actions CI/CD workflow
- ├── example/                     # Жишээ код
+ ├── example/                    # Жишээ код
  │   ├── index.php               # Application boot script
  │   ├── ExampleRouter.php       # Router жишээ
  │   ├── ExampleController.php   # Controller жишээ
@@ -83,18 +83,18 @@ HTTP-Application/
  │   ├── AfterMiddleware.php     # After middleware жишээ
  │   ├── OnionMiddleware.php     # Onion middleware жишээ
  │   └── .htaccess               # Apache rewrite тохиргоо
- ├── src/                         # Эх код
+ ├── src/                        # Эх код
  │   ├── Application.php         # Application цөм класс
  │   ├── Controller.php          # Controller суурь класс
- │   ├── ExceptionHandler.php   # Exception handler
+ │   ├── ExceptionHandler.php    # Exception handler
  │   └── ExceptionHandlerInterface.php  # Exception handler интерфэйс
- ├── tests/                       # Тестүүд
+ ├── tests/                      # Тестүүд
  │   ├── ApplicationTest.php     # Application тестүүд
  │   ├── ControllerTest.php      # Controller тестүүд
  │   ├── ExceptionHandlerTest.php # ExceptionHandler тестүүд
- │   ├── EdgeCaseTest.php        # Edge case тестүүд
- │   ├── PerformanceTest.php     # Performance тестүүд
- │   ├── TestHelper.php          # Тест helper функцүүд
+ │   ├── EdgeCaseTest.php         # Edge case тестүүд
+ │   ├── PerformanceTest.php      # Performance тестүүд
+ │   ├── TestHelper.php           # Тест helper функцүүд
  │   └── Integration/
  │       └── ApplicationIntegrationTest.php  # Integration тестүүд
 ├── .gitignore                   # Git ignore файл
@@ -235,8 +235,8 @@ $app->use(new MyHandler());
 
 # 📘 Хөгжүүлэлтийн зөвлөмж
 
-- PHP 8.2+ орчин  
-- Apache + .htaccess rewrite тохиргоотой  
+- PHP 8.2.1+ орчин  
+- Apache + .htaccess rewrite тохиргоотой  (optional)
 - Төсөлдөө MVC хэв маяг авахад маш тохиромжтой  
 
 ---
@@ -245,89 +245,51 @@ $app->use(new MyHandler());
 
 Багц нь PHPUnit тестүүдтэй ирдэг. Доорх зааварчилгааны дагуу тестүүдийг ажиллуулж болно.
 
-## Windows дээр тест ажиллуулах
+## Шаардлага
 
-### Шаардлага:
-- PHP 8.2+ суулгасан байх
+- PHP 8.2.1+ суулгасан байх
 - Composer суулгасан байх
-- PowerShell эсвэл Command Prompt
+- PHP-XML, PHP-MBSTRING extensions идэвхжсэн байх (Linux/macOS)
 
-### Алхам:
+## Алхам
 
 1. **Dependencies суулгах:**
-   ```powershell
+   ```bash
    composer install
    ```
 
-2. **PHPUnit ажиллуулах:**
+2. **Тест ажиллуулах (OS-оос хамаарах команд):**
+
+   **Windows (PowerShell/CMD):**
    ```powershell
    vendor\bin\phpunit
    ```
+
+   **Linux/macOS:**
+   ```bash
+   vendor/bin/phpunit
+   ```
+
+3. **Coverage report үүсгэх:**
    
-   Эсвэл coverage-тэй:
+   **Windows:**
    ```powershell
    vendor\bin\phpunit --coverage-html coverage/html
    ```
+   
+   **Linux/macOS:**
+   ```bash
+   vendor/bin/phpunit --coverage-html coverage/html
+   ```
 
-3. **Тодорхой тест файл ажиллуулах:**
+4. **Тодорхой тест файл ажиллуулах:**
+   
+   **Windows:**
    ```powershell
    vendor\bin\phpunit tests/ApplicationTest.php
    ```
-
-## Linux дээр тест ажиллуулах
-
-### Шаардлага:
-- PHP 8.2+ суулгасан байх
-- Composer суулгасан байх
-- PHP-XML, PHP-MBSTRING extensions идэвхжсэн байх
-
-### Алхам:
-
-1. **Dependencies суулгах:**
-   ```bash
-   composer install
-   ```
-
-2. **PHPUnit ажиллуулах:**
-   ```bash
-   vendor/bin/phpunit
-   ```
    
-   Эсвэл coverage-тэй:
-   ```bash
-   vendor/bin/phpunit --coverage-html coverage/html
-   ```
-
-3. **Тодорхой тест файл ажиллуулах:**
-   ```bash
-   vendor/bin/phpunit tests/ApplicationTest.php
-   ```
-
-## macOS дээр тест ажиллуулах
-
-### Шаардлага:
-- PHP 8.2+ суулгасан байх (Homebrew ашиглан: `brew install php@8.3`)
-- Composer суулгасан байх
-- Terminal
-
-### Алхам:
-
-1. **Dependencies суулгах:**
-   ```bash
-   composer install
-   ```
-
-2. **PHPUnit ажиллуулах:**
-   ```bash
-   vendor/bin/phpunit
-   ```
-   
-   Эсвэл coverage-тэй:
-   ```bash
-   vendor/bin/phpunit --coverage-html coverage/html
-   ```
-
-3. **Тодорхой тест файл ажиллуулах:**
+   **Linux/macOS:**
    ```bash
    vendor/bin/phpunit tests/ApplicationTest.php
    ```
@@ -364,11 +326,11 @@ tests/
 
 ---
 
-# 👨‍💻 Хөгжүүлэгч
+# 👨‍💻 Зохиогч
 
 Narankhuu  
 📧 codesaur@gmail.com  
-📱 +976 99000287  
+📲 [+976 99000287](https://wa.me/97699000287)  
 🌐 https://github.com/codesaur  
 
 ---
