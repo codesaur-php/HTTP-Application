@@ -490,16 +490,6 @@ Package нь дараах use case-үүдэд тохиромжтой:
 
 ---
 
-## 🔗 Холбоос
-
-- [README.md](README.md) - Package-ийн ерөнхий тайлбар
-- [API.md](API.md) - API documentation
-- [GitHub Repository](https://github.com/codesaur-php/HTTP-Application)
-- [PSR-7 Specification](https://www.php-fig.org/psr/psr-7/)
-- [PSR-15 Specification](https://www.php-fig.org/psr/psr-15/)
-
----
-
 **Review хийсэн:** Cursor AI  
 **Огноо:** 2025  
 **Version:** 1.0.0

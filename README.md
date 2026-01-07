@@ -4,9 +4,18 @@
 [![PHP Version](https://img.shields.io/badge/php-%5E8.2.1-777BB4.svg?logo=php)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application цөм**
+**PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application цөм**  
+**Lightweight, flexible HTTP Application core compliant with PSR-7 & PSR-15**
 
 ---
+
+## Агуулга / Table of Contents
+
+1. [Монгол](#1-монгол-тайлбар) | 2. [English](#2-english-description) | 3. [Getting Started](#3-getting-started)
+
+---
+
+## 1. Монгол тайлбар
 
 `codesaur/http-application` нь PSR-7 (HTTP Message) ба PSR-15 (HTTP Server RequestHandler/Middleware) стандартууд дээр суурилсан **минималист**, **өндөр уян хатан**, **middleware суурьтай** Application цөм юм.
 
@@ -20,41 +29,187 @@
 
 гэх мэтээр өөрийн хүссэн бүтэцтэй web application-ийг хэдхэн мөр кодоор босгох боломжтой.
 
----
+### Гол боломжууд
 
-# 🚀 Гол боломжууд
+- ✔ PSR-7 стандартын ServerRequest + Response  
+- ✔ PSR-15 Middleware & RequestHandler гинжин бүтэц  
+- ✔ Уян хатан Router интеграци (codesaur/router)  
+- ✔ Controller суурь класс (MVC хэв маяг дэмжлэг)  
+- ✔ Exception Handler (development mode-той)  
+- ✔ Хэт хөнгөн, хурдан  
 
-### ✔ PSR-7 стандартын ServerRequest + Response  
-Request болон Response объектууд бүгд **immutable**, бүрэн стандартын дагуу.
+### Дэлгэрэнгүй мэдээлэл
 
-### ✔ PSR-15 Middleware & RequestHandler гинжин бүтэц  
-Middleware-үүд өөр хоорондоо сонгино шиг (before → action → after) ажиллана.
-
-### ✔ Уян хатан Router интеграци  
-Багц нь **codesaur/router**-ийг шууд дэмждэг.  
-
-Dynamic, typed, multi-method маршрутуудыг амархан зарлана.
-
-### ✔ Controller суурь класс  
-PHP MVC хэв маягтай хөгжүүлэхэд тохиромжтой.
-
-### ✔ Exception Handler  
-Алдааны боловсруулалт. Development mode дээр trace харуулдаг. Хөгжүүлэгч өөрийн хүссэнээр сайжруулж болно.
-
-### ✔ Хэт хөнгөн, хурдан  
-Ямар ч framework-ийн суурь болгон ашиглах боломжтой.
+- 📖 [Бүрэн танилцуулга](docs/mn/README.md) - Суурилуулалт, хэрэглээ, жишээнүүд
+- 📚 [API тайлбар](docs/mn/api.md) - Бүх метод, exception-үүдийн тайлбар
+- 🔍 [Шалгалтын тайлан](docs/mn/review.md) - Код шалгалтын тайлан
 
 ---
 
-# 📦 Суулгах
+## 2. English Description
 
-```
+`codesaur/http-application` is a **minimalist**, **highly flexible**, **middleware-based** Application core built on PSR-7 (HTTP Message) and PSR-15 (HTTP Server RequestHandler/Middleware) standards.
+
+You can:
+- Add Router  
+- Manage Middleware  
+- Use Controller/action  
+- Use Closure routes  
+- Register Exception handler  
+- Use Custom request attributes  
+
+and build your desired web application structure with just a few lines of code.
+
+### Key Features
+
+- ✔ PSR-7 Standard ServerRequest + Response  
+- ✔ PSR-15 Middleware & RequestHandler Chain Structure  
+- ✔ Flexible Router Integration (codesaur/router)  
+- ✔ Controller Base Class (MVC pattern support)  
+- ✔ Exception Handler (with development mode)  
+- ✔ Extremely Lightweight and Fast  
+
+### Documentation
+
+- 📖 [Full Documentation](docs/en/README.md) - Installation, usage, examples
+- 📚 [API Reference](docs/en/api.md) - Complete API documentation
+- 🔍 [Review](docs/en/review.md) - Complete package review and code quality assessment
+
+---
+
+## 3. Getting Started
+
+### Requirements
+
+- PHP **8.2.1+**
+- Composer
+- PSR-7 compatible HTTP Message implementation (e.g., `codesaur/http-message`)
+
+### Installation
+
+Composer ашиглан суулгана / Install via Composer:
+
+```bash
 composer require codesaur/http-application
 ```
 
+### Quick Examples
+
+#### Application - Basic Setup
+
+```php
+use codesaur\Http\Application\Application;
+use codesaur\Http\Application\ExceptionHandler;
+use codesaur\Http\Message\ServerRequest;
+
+// Application instance үүсгэх / Create Application instance
+$app = new Application();
+
+// Exception handler бүртгэх / Register exception handler
+$app->use(new ExceptionHandler());
+
+// Route бүртгэх / Register route
+$app->GET('/', function ($req) {
+    echo 'Hello World!';
+});
+
+// Хүсэлт боловсруулах / Handle request
+$request = (new ServerRequest())->initFromGlobal();
+$response = $app->handle($request);
+```
+
+#### Router - Dynamic Routes
+
+```php
+// Төрөлтэй параметртэй нэртэй route / Named route with typed parameters
+$app->GET('/user/{int:id}', [UserController::class, 'show'])->name('user.show');
+
+// Олон method-тэй route / Multi-method route
+$app->POST_PUT('/api/users', [UserController::class, 'save']);
+
+// Параметртэй Closure route / Closure route with parameters
+$app->GET('/sum/{int:a}/{uint:b}', function ($req) {
+    $params = $req->getAttribute('params');
+    echo $params['a'] + $params['b'];
+});
+```
+
+#### Controller - MVC Pattern
+
+```php
+use codesaur\Http\Application\Controller;
+
+class UserController extends Controller
+{
+    public function show(int $id): void
+    {
+        $query = $this->getQueryParams();
+        $page = $query['page'] ?? 1;
+        
+        echo "User ID: $id, Page: $page";
+    }
+    
+    public function create(): void
+    {
+        $data = $this->getParsedBody();
+        $name = $data['name'] ?? 'Unknown';
+        
+        echo "Created user: $name";
+    }
+}
+```
+
+#### Middleware - PSR-15 & Closure
+
+```php
+// PSR-15 Middleware
+class AuthMiddleware implements MiddlewareInterface
+{
+    public function process($req, $handler): ResponseInterface
+    {
+        // Баталгаажуулалт шалгах / Check authentication
+        if (!$this->isAuthenticated($req)) {
+            return new Response(401);
+        }
+        
+        return $handler->handle($req);
+    }
+}
+
+$app->use(new AuthMiddleware());
+
+// Closure Middleware
+$app->use(function ($req, $handler) {
+    $startTime = microtime(true);
+    $response = $handler->handle($req);
+    $duration = microtime(true) - $startTime;
+    
+    error_log("Request took: {$duration}s");
+    return $response;
+});
+```
+
+### Running Tests
+
+Тест ажиллуулах / Run tests:
+
+```bash
+# Бүх тестүүдийг ажиллуулах / Run all tests
+composer test
+
+# Зөвхөн unit тест / Unit tests only
+composer test:unit
+
+# Зөвхөн integration тест / Integration tests only
+composer test:integration
+
+# Coverage-тэй тест ажиллуулах / Run tests with coverage
+composer test:coverage
+```
+
 ---
 
-# 🧱 Архитектур
+## Architecture
 
 ```
 Application
@@ -64,284 +219,27 @@ Application
  └── Controller / Closure route executor
 ```
 
-Application → Middleware-үүд → Match route → Controller/action/Closure → Response
+**Request Flow:** Application → Middleware → Match route → Controller/action/Closure → Response
 
 ---
 
-# 📁 Төслийн файл бүтэц
+## Changelog
 
-```
-HTTP-Application/
- ├── .github/
- │   └── workflows/
- │       └── ci.yml              # GitHub Actions CI/CD workflow
- ├── example/                    # Жишээ код
- │   ├── index.php               # Application boot script
- │   ├── ExampleRouter.php       # Router жишээ
- │   ├── ExampleController.php   # Controller жишээ
- │   ├── BeforeMiddleware.php    # Before middleware жишээ
- │   ├── AfterMiddleware.php     # After middleware жишээ
- │   ├── OnionMiddleware.php     # Onion middleware жишээ
- │   └── .htaccess               # Apache rewrite тохиргоо
- ├── src/                        # Эх код
- │   ├── Application.php         # Application цөм класс
- │   ├── Controller.php          # Controller суурь класс
- │   ├── ExceptionHandler.php    # Exception handler
- │   └── ExceptionHandlerInterface.php  # Exception handler интерфэйс
- ├── tests/                      # Тестүүд
- │   ├── ApplicationTest.php     # Application тестүүд
- │   ├── ControllerTest.php      # Controller тестүүд
- │   ├── ExceptionHandlerTest.php # ExceptionHandler тестүүд
- │   ├── EdgeCaseTest.php         # Edge case тестүүд
- │   ├── PerformanceTest.php      # Performance тестүүд
- │   ├── TestHelper.php           # Тест helper функцүүд
- │   └── Integration/
- │       └── ApplicationIntegrationTest.php  # Integration тестүүд
-├── .gitignore                   # Git ignore файл
-├── [API.md](API.md)             # API документаци
-├── composer.json                # Composer тохиргоо
-├── LICENSE                      # MIT лиценз
-├── phpunit.xml                  # PHPUnit тохиргоо
-├── README.md                    # Энэ файл
-└── [REVIEW.md](REVIEW.md)       # Code review баримт бичиг
-```
+- 📝 [CHANGELOG.md](CHANGELOG.md) - Full version history
 
----
+## Contributing & Security
 
-# 📝 Хэрэглээний жишээ
+- 🤝 [Contributing Guide](.github/CONTRIBUTING.md)
+- 🔐 [Security Policy](.github/SECURITY.md)
 
-## 🔹 Application boot script (index.php)
+## License
 
-```php
-$application = new class extends Application {
-    public function __construct() {
-        parent::__construct();
+This project is licensed under the MIT License.
 
-        $this->use(new ExceptionHandler());
-        $this->use(new BeforeMiddleware());
-        $this->use(new AfterMiddleware());
-        $this->use(new OnionMiddleware());
-        $this->use(new ExampleRouter());
+## Author
 
-        $this->GET('/', [ExampleController::class, 'index']);
-    }
-};
-
-$application->handle((new ServerRequest())->initFromGlobal());
-```
-
----
-
-# 🔗 Router жишээ
-
-```php
-$this->GET('/hello/{firstname}', [ExampleController::class, 'hello'])->name('hi');
-
-$this->POST_PUT('/post-or-put', [ExampleController::class, 'post_put']);
-
-$this->GET('/float/{float:number}', [ExampleController::class, 'float']);
-
-$this->GET('/sum/{int:a}/{uint:b}', function ($req) {
-    $a = $req->getAttribute('params')['a'];
-    $b = $req->getAttribute('params')['b'];
-    echo "$a + $b = " . ($a + $b);
-});
-```
-
----
-
-# 🧭 Controller жишээ
-
-```php
-class ExampleController extends Controller
-{
-    public function hello(string $firstname)
-    {
-        $user = $firstname;
-
-        $params = $this->getQueryParams();
-        if (!empty($params['lastname'])) {
-            $user .= " {$params['lastname']}";
-        }
-
-        echo "Hello $user!";
-    }
-}
-```
-
----
-
-# 🧅 Middleware жишээ (Onion модель)
-
-### BeforeMiddleware → request шинээр attribute нэмэх  
-### AfterMiddleware → request-ийн хугацааг хэвлэх  
-### OnionMiddleware → before/after лог хэвлэх
-
-```php
-class OnionMiddleware implements MiddlewareInterface
-{
-    public function process($req, $handler): ResponseInterface
-    {
-        var_dump("i'm onion before");
-        $res = $handler->handle($req);
-        var_dump("i'm onion after");
-        return $res;
-    }
-}
-```
-
----
-
-# ⚠ Алдааны боловсруулалт (ExceptionHandler)
-
-```php
-$this->use(new ExceptionHandler());
-```
-
-- Алдааны код байвал HTTP статус автоматаар тохируулна  
-- Алдааг `error_log` руу бичнэ  
-- HTML error page буцаана  
-- Development mode дээр trace харагдана  
-
-```php
-define('CODESAUR_DEVELOPMENT', true);
-```
-
----
-
-# 🔍 Request боловсруулах дараалал
-
-1. Middleware stack эхнээс нь дуудна  
-2. Router → Match → Callback/Controller action  
-3. Middleware stack буцаад дуусгана  
-4. Response-г хэрэглэгч рүү дамжуулна  
-
----
-
-# 🔧 Custom ExceptionHandler ашиглах
-
-```php
-class MyHandler implements ExceptionHandlerInterface {
-    public function exception(Throwable $e) {
-        http_response_code(500);
-        echo "Custom error: " . $e->getMessage();
-    }
-}
-
-$app->use(new MyHandler());
-```
-
----
-
-# 📘 Хөгжүүлэлтийн зөвлөмж
-
-- PHP 8.2.1+ орчин  
-- Apache + .htaccess rewrite тохиргоотой  (optional)
-- Төсөлдөө MVC хэв маяг авахад маш тохиромжтой  
-
----
-
-# 🧪 Тест ажиллуулах
-
-Багц нь PHPUnit тестүүдтэй ирдэг. Доорх зааварчилгааны дагуу тестүүдийг ажиллуулж болно.
-
-## Шаардлага
-
-- PHP 8.2.1+ суулгасан байх
-- Composer суулгасан байх
-- PHP-XML, PHP-MBSTRING extensions идэвхжсэн байх (Linux/macOS)
-
-## Алхам
-
-1. **Dependencies суулгах:**
-   ```bash
-   composer install
-   ```
-
-2. **Тест ажиллуулах (OS-оос хамаарах команд):**
-
-   **Windows (PowerShell/CMD):**
-   ```powershell
-   vendor\bin\phpunit
-   ```
-
-   **Linux/macOS:**
-   ```bash
-   vendor/bin/phpunit
-   ```
-
-3. **Coverage report үүсгэх:**
-   
-   **Windows:**
-   ```powershell
-   vendor\bin\phpunit --coverage-html coverage/html
-   ```
-   
-   **Linux/macOS:**
-   ```bash
-   vendor/bin/phpunit --coverage-html coverage/html
-   ```
-
-4. **Тодорхой тест файл ажиллуулах:**
-   
-   **Windows:**
-   ```powershell
-   vendor\bin\phpunit tests/ApplicationTest.php
-   ```
-   
-   **Linux/macOS:**
-   ```bash
-   vendor/bin/phpunit tests/ApplicationTest.php
-   ```
-
-## Тестүүдийн бүтэц
-
-```
-tests/
- ├── ApplicationTest.php      # Application классын тестүүд
- ├── ControllerTest.php       # Controller суурь классын тестүүд
- └── ExceptionHandlerTest.php # ExceptionHandler классын тестүүд
-```
-
-## GitHub Actions CI/CD
-
-Төсөл нь GitHub Actions CI/CD workflow-тэй ирдэг. Push эсвэл Pull Request хийхэд автоматаар тестүүд ажиллана:
-
-- **PHP хувилбарууд:** 8.2, 8.3, 8.4
-- **Үйлдлийн системүүд:** Ubuntu, Windows, macOS
-- **Coverage report:** Codecov руу автоматаар илгээгдэнэ
-
----
-
-# 📄 Лиценз
-
-Энэ төсөл MIT лицензтэй.
-
----
-
-# 📚 Нэмэлт Документаци
-
-- 📘 [API.md](API.md) - Бүрэн API удирдлага, бүх класс болон method-үүдийн дэлгэрэнгүй тайлбар (PHPDoc комментоос Cursor AI үүсгэв)
-- 🔍 [REVIEW.md](REVIEW.md) - Код шалгалтын тайлан, код чанар, архитектур, PSR стандартууд (Cursor AI шинжилсэн)
-
----
-
-# 👨‍💻 Зохиогч
-
-Narankhuu  
+**Narankhuu**  
 📧 codesaur@gmail.com  
-📲 [+976 99000287](https://wa.me/97699000287)  
-🌐 https://github.com/codesaur  
+🌐 https://github.com/codesaur
 
----
-
-# 🎯 Дүгнэлт
-
-`codesaur/http-application` бол:
-- Хөнгөн  
-- Уян хатан  
-- Стандарт мөрдсөн  
-- Энгийн  
-- Хурдан  
-
-PHP дээр PSR стандарт нийцсэн өөрийн аппликейшн бүтэцтэй болохыг хүсвэл хамгийн тохиромжтой сонголт юм!
+🦖 **codesaur ecosystem:** https://codesaur.net

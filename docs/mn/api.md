@@ -481,18 +481,3 @@ class UserController extends Controller
     }
 }
 ```
-
----
-
-## 📄 Лиценз
-
-MIT License
-
----
-
-# 👨‍💻 Зохиогч
-
-Narankhuu  
-📧 codesaur@gmail.com  
-📲 [+976 99000287](https://wa.me/97699000287)  
-🌐 https://github.com/codesaur
