@@ -6,35 +6,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
-## [6.0.0] - 2026-01-08
+## [6.0.0] - 2025-01-08
 [6.0.0]: https://github.com/codesaur-php/HTTP-Application/compare/v5.0...v6.0.0
 
 ### Added
-- Complete English translation of all documentation files in docs/en/:
-  - docs/en/README.md - Full English documentation
-  - docs/en/api.md - Complete API documentation in English
-  - docs/en/review.md - Package review and code quality assessment in English
-- Composer test commands in composer.json:
-  - `composer test` - Run all tests
+- **Complete English Documentation**: Full translation of all documentation files in docs/en/:
+  - docs/en/README.md - Complete English documentation with installation, usage, and examples
+  - docs/en/api.md - Comprehensive API documentation in English
+  - docs/en/review.md - Complete package review and code quality assessment in English
+- **Composer Test Commands**: Added convenient test commands in composer.json:
+  - `composer test` - Run all tests (Unit + Integration)
   - `composer test:unit` - Run unit tests only
   - `composer test:integration` - Run integration tests only
-  - `composer test:coverage` - Generate HTML coverage report
-  - `composer test:coverage-clover` - Generate Clover XML coverage report
-- Comprehensive CONTRIBUTING.md guide with development workflow
-- Bilingual README.md (English/Mongolian) with proper project structure
+  - `composer test:coverage` - Generate HTML and text coverage reports
+  - `composer test:coverage-clover` - Generate Clover XML coverage report for CI/CD
+- **Contributing Guide**: Comprehensive CONTRIBUTING.md with:
+  - Development workflow and setup instructions
+  - Coding guidelines and standards
+  - Pull request guidelines and templates
+  - Commit message format (Conventional Commits)
+  - Testing commands documentation
+  - Code of conduct
 
 ### Changed
-- Refactored main README.md to properly reflect HTTP-Application project structure and features
-- Updated test section in docs/mn/README.md with clearer composer command documentation
-- Improved documentation structure and consistency across all language versions
-- Enhanced code examples with bilingual comments for better understanding
-- Updated dependencies:
+- **README.md Refactored**: 
+  - Reorganized structure with Mongolian section first, English second
+  - Bilingual main description (Mongolian/English)
+  - Updated code examples with bilingual comments
+  - Improved project structure and feature descriptions
+- **Documentation Improvements**:
+  - Updated test section in docs/mn/README.md with clearer composer command documentation
+  - Improved documentation structure and consistency across all language versions
+  - Enhanced code examples with bilingual comments for better understanding
+- **Dependencies Updated**:
   - codesaur/router: >=4.0 → ^5.0.0
   - codesaur/http-message: >=1.3 → ^3.0.0
-  - psr/http-server-middleware >=1.0.1 → ^1.0.2
+  - psr/http-server-middleware: >=1.0.1 → ^1.0.2
 
 ### Fixed
 - Fixed repository URLs and project references in documentation
+- Corrected package name references throughout documentation
+- Improved CHANGELOG.md with accurate version history based on source code analysis
 
 ---
 
