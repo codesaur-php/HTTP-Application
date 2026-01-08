@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
-## [6.0.0] - 2026-01-07
+## [6.0.0] - 2026-01-08
 [6.0.0]: https://github.com/codesaur-php/HTTP-Application/compare/v5.0...v6.0.0
 
 ### Added
