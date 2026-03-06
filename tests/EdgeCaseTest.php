@@ -142,7 +142,7 @@ class EdgeCaseTest extends TestCase
 
     public function testControllerWithManyParameters(): void
     {
-        $this->app->GET('/complex/{int:a}/{int:b}/{int:c}/{int:d}/{int:e}', 
+        $this->app->GET('/complex/{int:a}/{int:b}/{int:c}/{int:d}/{int:e}',
             [EdgeCaseTestController::class, 'complex']);
 
         $request = TestHelper::createServerRequest('GET', '/complex/1/2/3/4/5');
@@ -158,7 +158,6 @@ class EdgeCaseTest extends TestCase
         });
 
         $request = TestHelper::createServerRequest('GET', '/subdir/api/users', ['SCRIPT_NAME' => '/subdir/index.php']);
-        
 
         $response = $this->app->handle($request);
         $this->assertInstanceOf(ResponseInterface::class, $response);

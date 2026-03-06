@@ -171,7 +171,6 @@ class ApplicationIntegrationTest extends TestCase
         $uri = TestHelper::createUri('/search');
         $uri->setQuery('q=test&page=1');
         $request = TestHelper::createServerRequest('GET', $uri);
-            
 
         $response = $this->app->handle($request);
 
@@ -184,7 +183,6 @@ class ApplicationIntegrationTest extends TestCase
 
         $request = TestHelper::createServerRequest('POST', '/api/users');
         $request = $request->withParsedBody(['name' => 'John', 'email' => 'john@example.com']);
-            
 
         $response = $this->app->handle($request);
 

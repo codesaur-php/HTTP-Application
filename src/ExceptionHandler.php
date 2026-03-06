@@ -73,7 +73,7 @@ class ExceptionHandler implements ExceptionHandlerInterface
                 \http_response_code($code);
             }
 
-            // Title дээр кодыг нэмнэ → ErrorException 404
+            // Title дээр кодыг нэмнэ -> ErrorException 404
             $title .= " $code";
         }
 

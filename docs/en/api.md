@@ -1,10 +1,10 @@
-# 📘 API Documentation
+# API Documentation
 
 **codesaur/http-application** package API reference.
 
 ---
 
-## 📋 Contents
+## Contents
 
 - [Application Class](#application-class)
 - [Controller Class](#controller-class)
@@ -15,7 +15,7 @@
 
 ## Application Class
 
-**Namespace:** `codesaur\Http\Application`  
+**Namespace:** `codesaur\Http\Application`
 **Implements:** `Psr\Http\Server\RequestHandlerInterface`
 
 HTTP Application core class implementing PSR-15 standard RequestHandlerInterface.
@@ -136,7 +136,7 @@ This function performs the complete process of handling HTTP requests:
 
 **Route Matching:**
 - Finds route by URI path and HTTP method
-- Adds route parameters to Request attributes (e.g., `/user/{int:id}` → `$request->getAttribute('params')['id']`)
+- Adds route parameters to Request attributes (e.g., `/user/{int:id}` -> `$request->getAttribute('params')['id']`)
 - Adds Router instance to Request attribute (`$request->getAttribute('router')`)
 
 **Route Execution:**
@@ -170,7 +170,7 @@ $response = $app->handle($request);
 
 ## Controller Class
 
-**Namespace:** `codesaur\Http\Application`  
+**Namespace:** `codesaur\Http\Application`
 **Type:** `abstract class`
 
 Base class for all Controller classes.
@@ -236,8 +236,8 @@ $email = $data['email'] ?? '';
 
 Get query string parameters.
 
-Gets parameters from URL query string.  
-Example: `?page=1&limit=10` → `['page' => '1', 'limit' => '10']`
+Gets parameters from URL query string.
+Example: `?page=1&limit=10` -> `['page' => '1', 'limit' => '10']`
 
 **Returns:** `array<string, mixed>` - Query parameters array
 
@@ -296,7 +296,7 @@ $startTime = $this->getAttribute('start_time', 0);
 
 ## ExceptionHandler Class
 
-**Namespace:** `codesaur\Http\Application`  
+**Namespace:** `codesaur\Http\Application`
 **Implements:** `codesaur\Http\Application\ExceptionHandlerInterface`
 
 This class implements ExceptionHandlerInterface and is a lightweight error handler designed to catch any Exception/Error from the system and generate appropriate HTTP status code response.
@@ -366,7 +366,7 @@ Protocol is determined as follows:
 
 ## ExceptionHandlerInterface
 
-**Namespace:** `codesaur\Http\Application`  
+**Namespace:** `codesaur\Http\Application`
 **Type:** `interface`
 
 Application-level error handler interface.
@@ -419,14 +419,14 @@ $app->use(new MyCustomHandler());
 
 ---
 
-## 🔗 Related Packages
+## Related Packages
 
 - **codesaur/router** - Router functionality
 - **codesaur/http-message** - PSR-7 HTTP Message implementation
 
 ---
 
-## 📝 Examples
+## Examples
 
 ### Complete Example
 
@@ -467,16 +467,16 @@ class UserController extends Controller
     {
         $params = $this->getAttribute('params');
         $query = $this->getQueryParams();
-        
+
         echo "User ID: $id";
         echo "Page: " . ($query['page'] ?? 1);
     }
-    
+
     public function create(): void
     {
         $data = $this->getParsedBody();
         $name = $data['name'] ?? 'Unknown';
-        
+
         echo "Created user: $name";
     }
 }

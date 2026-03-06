@@ -1,10 +1,10 @@
-# 🦖 codesaur/http-application
+# codesaur/http-application
 
 [![CI](https://github.com/codesaur-php/HTTP-Application/workflows/CI/badge.svg)](https://github.com/codesaur-php/HTTP-Application/actions)
 [![PHP Version](https://img.shields.io/badge/php-%5E8.2.1-777BB4.svg?logo=php)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application цөм**  
+**PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application цөм**
 **Lightweight, flexible HTTP Application core compliant with PSR-7 & PSR-15**
 
 ---
@@ -20,29 +20,29 @@
 `codesaur/http-application` нь PSR-7 (HTTP Message) ба PSR-15 (HTTP Server RequestHandler/Middleware) стандартууд дээр суурилсан **минималист**, **өндөр уян хатан**, **middleware суурьтай** Application цөм юм.
 
 Та хүсвэл:
-- Router нэмэх  
-- Middleware удирдах  
-- Controller/action ашиглах  
-- Closure route ашиглах  
-- Exception handler бүртгэх  
-- Custom request attributes ашиглах  
+- Router нэмэх
+- Middleware удирдах
+- Controller/action ашиглах
+- Closure route ашиглах
+- Exception handler бүртгэх
+- Custom request attributes ашиглах
 
 гэх мэтээр өөрийн хүссэн бүтэцтэй web application-ийг хэдхэн мөр кодоор босгох боломжтой.
 
 ### Гол боломжууд
 
-- ✔ PSR-7 стандартын ServerRequest + Response  
-- ✔ PSR-15 Middleware & RequestHandler гинжин бүтэц  
-- ✔ Уян хатан Router интеграци (codesaur/router)  
-- ✔ Controller суурь класс (MVC хэв маяг дэмжлэг)  
-- ✔ Exception Handler (development mode-той)  
-- ✔ Хэт хөнгөн, хурдан  
+- PSR-7 стандартын ServerRequest + Response
+- PSR-15 Middleware & RequestHandler гинжин бүтэц
+- Уян хатан Router интеграци (codesaur/router)
+- Controller суурь класс (MVC хэв маяг дэмжлэг)
+- Exception Handler (development mode-той)
+- Хэт хөнгөн, хурдан
 
 ### Дэлгэрэнгүй мэдээлэл
 
-- 📖 [Бүрэн танилцуулга](docs/mn/README.md) - Суурилуулалт, хэрэглээ, жишээнүүд
-- 📚 [API тайлбар](docs/mn/api.md) - Бүх метод, exception-үүдийн тайлбар
-- 🔍 [Шалгалтын тайлан](docs/mn/review.md) - Код шалгалтын тайлан
+- [Бүрэн танилцуулга](docs/mn/README.md) - Суурилуулалт, хэрэглээ, жишээнүүд
+- [API тайлбар](docs/mn/api.md) - Бүх метод, exception-үүдийн тайлбар
+- [Шалгалтын тайлан](docs/mn/review.md) - Код шалгалтын тайлан
 
 ---
 
@@ -51,29 +51,29 @@
 `codesaur/http-application` is a **minimalist**, **highly flexible**, **middleware-based** Application core built on PSR-7 (HTTP Message) and PSR-15 (HTTP Server RequestHandler/Middleware) standards.
 
 You can:
-- Add Router  
-- Manage Middleware  
-- Use Controller/action  
-- Use Closure routes  
-- Register Exception handler  
-- Use Custom request attributes  
+- Add Router
+- Manage Middleware
+- Use Controller/action
+- Use Closure routes
+- Register Exception handler
+- Use Custom request attributes
 
 and build your desired web application structure with just a few lines of code.
 
 ### Key Features
 
-- ✔ PSR-7 Standard ServerRequest + Response  
-- ✔ PSR-15 Middleware & RequestHandler Chain Structure  
-- ✔ Flexible Router Integration (codesaur/router)  
-- ✔ Controller Base Class (MVC pattern support)  
-- ✔ Exception Handler (with development mode)  
-- ✔ Extremely Lightweight and Fast  
+- PSR-7 Standard ServerRequest + Response
+- PSR-15 Middleware & RequestHandler Chain Structure
+- Flexible Router Integration (codesaur/router)
+- Controller Base Class (MVC pattern support)
+- Exception Handler (with development mode)
+- Extremely Lightweight and Fast
 
 ### Documentation
 
-- 📖 [Full Documentation](docs/en/README.md) - Installation, usage, examples
-- 📚 [API Reference](docs/en/api.md) - Complete API documentation
-- 🔍 [Review](docs/en/review.md) - Complete package review and code quality assessment
+- [Full Documentation](docs/en/README.md) - Installation, usage, examples
+- [API Reference](docs/en/api.md) - Complete API documentation
+- [Review](docs/en/review.md) - Complete package review and code quality assessment
 
 ---
 
@@ -145,15 +145,15 @@ class UserController extends Controller
     {
         $query = $this->getQueryParams();
         $page = $query['page'] ?? 1;
-        
+
         echo "User ID: $id, Page: $page";
     }
-    
+
     public function create(): void
     {
         $data = $this->getParsedBody();
         $name = $data['name'] ?? 'Unknown';
-        
+
         echo "Created user: $name";
     }
 }
@@ -171,7 +171,7 @@ class AuthMiddleware implements MiddlewareInterface
         if (!$this->isAuthenticated($req)) {
             return new Response(401);
         }
-        
+
         return $handler->handle($req);
     }
 }
@@ -183,7 +183,7 @@ $app->use(function ($req, $handler) {
     $startTime = microtime(true);
     $response = $handler->handle($req);
     $duration = microtime(true) - $startTime;
-    
+
     error_log("Request took: {$duration}s");
     return $response;
 });
@@ -213,24 +213,24 @@ composer test:coverage
 
 ```
 Application
- ├── Middleware stack (PSR-15 + Closure)
- ├── Router (codesaur/router)
- ├── ExceptionHandler
- └── Controller / Closure route executor
+ +-- Middleware stack (PSR-15 + Closure)
+ +-- Router (codesaur/router)
+ +-- ExceptionHandler
+ +-- Controller / Closure route executor
 ```
 
-**Request Flow:** Application → Middleware → Match route → Controller/action/Closure → Response
+**Request Flow:** Application -> Middleware -> Match route -> Controller/action/Closure -> Response
 
 ---
 
 ## Changelog
 
-- 📝 [CHANGELOG.md](CHANGELOG.md) - Full version history
+- [CHANGELOG.md](CHANGELOG.md) - Full version history
 
 ## Contributing & Security
 
-- 🤝 [Contributing Guide](.github/CONTRIBUTING.md)
-- 🔐 [Security Policy](.github/SECURITY.md)
+- [Contributing Guide](.github/CONTRIBUTING.md)
+- [Security Policy](.github/SECURITY.md)
 
 ## License
 
@@ -239,7 +239,7 @@ This project is licensed under the MIT License.
 ## Author
 
 **Narankhuu**  
-📧 codesaur@gmail.com  
-🌐 https://github.com/codesaur
+codesaur@gmail.com  
+https://github.com/codesaur  
 
-🦖 **codesaur ecosystem:** https://codesaur.net
+**codesaur ecosystem:** https://codesaur.net

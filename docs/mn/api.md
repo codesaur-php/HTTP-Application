@@ -1,10 +1,10 @@
-# 📘 API Documentation
+# API Documentation
 
 **codesaur/http-application** багцын API удирдлага.
 
 ---
 
-## 📋 Агуулга
+## Агуулга
 
 - [Application Class](#application-class)
 - [Controller Class](#controller-class)
@@ -15,7 +15,7 @@
 
 ## Application Class
 
-**Namespace:** `codesaur\Http\Application`  
+**Namespace:** `codesaur\Http\Application`
 **Implements:** `Psr\Http\Server\RequestHandlerInterface`
 
 PSR-15 стандартын RequestHandlerInterface-г хэрэгжүүлсэн HTTP Application цөм класс.
@@ -136,7 +136,7 @@ PSR-15 RequestHandlerInterface::handle()-ийн хэрэгжилт.
 
 **Route Matching:**
 - URI path болон HTTP method-оор маршрут олно
-- Route parameters-г Request attributes-д нэмнэ (жишээ: `/user/{int:id}` → `$request->getAttribute('params')['id']`)
+- Route parameters-г Request attributes-д нэмнэ (жишээ: `/user/{int:id}` -> `$request->getAttribute('params')['id']`)
 - Router instance-г Request attribute-д нэмнэ (`$request->getAttribute('router')`)
 
 **Route Execution:**
@@ -170,7 +170,7 @@ $response = $app->handle($request);
 
 ## Controller Class
 
-**Namespace:** `codesaur\Http\Application`  
+**Namespace:** `codesaur\Http\Application`
 **Type:** `abstract class`
 
 Бүх Controller классуудын суурь анги.
@@ -236,8 +236,8 @@ $email = $data['email'] ?? '';
 
 Query string параметрүүдийг авах.
 
-URL-ийн query string-ээс параметрүүдийг авна.  
-Жишээ: `?page=1&limit=10` → `['page' => '1', 'limit' => '10']`
+URL-ийн query string-ээс параметрүүдийг авна.
+Жишээ: `?page=1&limit=10` -> `['page' => '1', 'limit' => '10']`
 
 **Returns:** `array<string, mixed>` - Query параметрүүдийн массив
 
@@ -296,7 +296,7 @@ $startTime = $this->getAttribute('start_time', 0);
 
 ## ExceptionHandler Class
 
-**Namespace:** `codesaur\Http\Application`  
+**Namespace:** `codesaur\Http\Application`
 **Implements:** `codesaur\Http\Application\ExceptionHandlerInterface`
 
 Энэ класс нь ExceptionHandlerInterface-ийг хэрэгжүүлж, системд гарсан аливаа Exception / Error-ийг нэг цэгээс хүлээн авч, зохих HTTP статус кодтой хариу үүсгэх зориулалттай, lightweight алдааны боловсруулагч юм.
@@ -366,7 +366,7 @@ HTTPS эсвэл HTTP протоколыг автоматаар тодорхой
 
 ## ExceptionHandlerInterface
 
-**Namespace:** `codesaur\Http\Application`  
+**Namespace:** `codesaur\Http\Application`
 **Type:** `interface`
 
 Application түвшний алдааны боловсруулагч интерфэйс.
@@ -419,14 +419,14 @@ $app->use(new MyCustomHandler());
 
 ---
 
-## 🔗 Холбоотой багцууд
+## Холбоотой багцууд
 
 - **codesaur/router** - Router функционал
 - **codesaur/http-message** - PSR-7 HTTP Message хэрэгжилт
 
 ---
 
-## 📝 Жишээ
+## Жишээ
 
 ### Бүрэн жишээ
 
@@ -467,16 +467,16 @@ class UserController extends Controller
     {
         $params = $this->getAttribute('params');
         $query = $this->getQueryParams();
-        
+
         echo "User ID: $id";
         echo "Page: " . ($query['page'] ?? 1);
     }
-    
+
     public function create(): void
     {
         $data = $this->getParsedBody();
         $name = $data['name'] ?? 'Unknown';
-        
+
         echo "Created user: $name";
     }
 }

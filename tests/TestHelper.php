@@ -40,10 +40,10 @@ class TestHelper
         array $serverParams = ['SCRIPT_NAME' => '/index.php']
     ): ServerRequest {
         $request = new ServerRequest();
-        
+
         // Method тохируулах
         $request = $request->withMethod($method);
-        
+
         // URI тохируулах
         if (is_string($path)) {
             $uri = self::createUri($path);
@@ -51,14 +51,13 @@ class TestHelper
             $uri = $path;
         }
         $request = $request->withUri($uri);
-        
+
         // Server params-г reflection ашиглан set хийх
         $reflection = new ReflectionClass($request);
         $property = $reflection->getProperty('serverParams');
         $property->setAccessible(true);
         $property->setValue($request, $serverParams);
-        
+
         return $request;
     }
 }
-

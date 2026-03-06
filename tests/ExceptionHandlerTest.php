@@ -28,7 +28,7 @@ class ExceptionHandlerTest extends TestCase
     public function testExceptionWithErrorCode(): void
     {
         $exception = new \Error('Not Found', 404);
-        
+
         ob_start();
         $this->handler->exception($exception);
         $output = ob_get_clean();
@@ -41,7 +41,7 @@ class ExceptionHandlerTest extends TestCase
     public function testExceptionWithZeroCode(): void
     {
         $exception = new \Exception('Generic Error', 0);
-        
+
         ob_start();
         $this->handler->exception($exception);
         $output = ob_get_clean();
@@ -53,7 +53,7 @@ class ExceptionHandlerTest extends TestCase
     public function testExceptionLogsError(): void
     {
         $exception = new \Error('Test Error', 500);
-        
+
         // Capture error_log output by setting error_log to a temporary file
         $logFile = sys_get_temp_dir() . '/phpunit_error_log_' . uniqid() . '.log';
         $originalErrorLog = ini_get('error_log');
@@ -82,7 +82,7 @@ class ExceptionHandlerTest extends TestCase
         }
 
         $exception = new \Exception('Development Error');
-        
+
         ob_start();
         $this->handler->exception($exception);
         $output = ob_get_clean();
@@ -93,7 +93,7 @@ class ExceptionHandlerTest extends TestCase
     public function testExceptionHtmlOutput(): void
     {
         $exception = new \Exception('Test Exception');
-        
+
         ob_start();
         $this->handler->exception($exception);
         $output = ob_get_clean();

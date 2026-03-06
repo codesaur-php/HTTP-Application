@@ -54,7 +54,7 @@ class PerformanceTest extends TestCase
         $end = microtime(true);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
-        
+
         // Performance assertion: 10 middleware-т 0.1 секундэд дуусна
         $this->assertLessThan(0.1, $end - $start, '10 middleware should complete in less than 0.1 seconds');
     }
@@ -76,7 +76,7 @@ class PerformanceTest extends TestCase
         $end = microtime(true);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
-        
+
         // Performance assertion: 100 route-т match хийхэд 0.05 секундэд дуусна
         $this->assertLessThan(0.05, $end - $start, 'Route matching with 100 routes should be fast');
     }
@@ -127,7 +127,7 @@ class PerformanceTest extends TestCase
         $end = microtime(true);
 
         $this->assertInstanceOf(ResponseInterface::class, $response);
-        
+
         // Performance assertion: 20 middleware-т 0.2 секундэд дуусна
         $this->assertLessThan(0.2, $end - $start, '20 middleware should complete in reasonable time');
     }

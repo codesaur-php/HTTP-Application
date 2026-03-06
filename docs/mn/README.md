@@ -1,4 +1,4 @@
-# 🦖 codesaur/http-application
+# codesaur/http-application
 
 **PSR-7 & PSR-15 нийцсэн хөнгөн, уян хатан HTTP Application цөм**
 
@@ -7,42 +7,42 @@
 `codesaur/http-application` нь PSR-7 (HTTP Message) ба PSR-15 (HTTP Server RequestHandler/Middleware) стандартууд дээр суурилсан **минималист**, **өндөр уян хатан**, **middleware суурьтай** Application цөм юм.
 
 Та хүсвэл:
-- Router нэмэх  
-- Middleware удирдах  
-- Controller/action ашиглах  
-- Closure route ашиглах  
-- Exception handler бүртгэх  
-- Custom request attributes ашиглах  
+- Router нэмэх
+- Middleware удирдах
+- Controller/action ашиглах
+- Closure route ашиглах
+- Exception handler бүртгэх
+- Custom request attributes ашиглах
 
 гэх мэтээр өөрийн хүссэн бүтэцтэй web application-ийг хэдхэн мөр кодоор босгох боломжтой.
 
 ---
 
-# 🚀 Гол боломжууд
+# Гол боломжууд
 
-### ✔ PSR-7 стандартын ServerRequest + Response  
+### PSR-7 стандартын ServerRequest + Response
 Request болон Response объектууд бүгд **immutable**, бүрэн стандартын дагуу.
 
-### ✔ PSR-15 Middleware & RequestHandler гинжин бүтэц  
-Middleware-үүд өөр хоорондоо сонгино шиг (before → action → after) ажиллана.
+### PSR-15 Middleware & RequestHandler гинжин бүтэц
+Middleware-үүд өөр хоорондоо сонгино шиг (before -> action -> after) ажиллана.
 
-### ✔ Уян хатан Router интеграци  
-Багц нь **codesaur/router**-ийг шууд дэмждэг.  
+### Уян хатан Router интеграци
+Багц нь **codesaur/router**-ийг шууд дэмждэг.
 
 Dynamic, typed, multi-method маршрутуудыг амархан зарлана.
 
-### ✔ Controller суурь класс  
+### Controller суурь класс
 PHP MVC хэв маягтай хөгжүүлэхэд тохиромжтой.
 
-### ✔ Exception Handler  
+### Exception Handler
 Алдааны боловсруулалт. Development mode дээр trace харуулдаг. Хөгжүүлэгч өөрийн хүссэнээр сайжруулж болно.
 
-### ✔ Хэт хөнгөн, хурдан  
+### Хэт хөнгөн, хурдан
 Ямар ч framework-ийн суурь болгон ашиглах боломжтой.
 
 ---
 
-# 📦 Суулгах
+# Суулгах
 
 ```
 composer require codesaur/http-application
@@ -50,23 +50,23 @@ composer require codesaur/http-application
 
 ---
 
-# 🧱 Архитектур
+# Архитектур
 
 ```
 Application
- ├── Middleware stack (PSR-15 + Closure)
- ├── Router (codesaur/router)
- ├── ExceptionHandler
- └── Controller / Closure route executor
+ +-- Middleware stack (PSR-15 + Closure)
+ +-- Router (codesaur/router)
+ +-- ExceptionHandler
+ +-- Controller / Closure route executor
 ```
 
-Application → Middleware-үүд → Match route → Controller/action/Closure → Response
+Application -> Middleware-үүд -> Match route -> Controller/action/Closure -> Response
 
 ---
 
-# 📝 Хэрэглээний жишээ
+# Хэрэглээний жишээ
 
-## 🔹 Application boot script (index.php)
+## Application boot script (index.php)
 
 ```php
 $application = new class extends Application {
@@ -88,7 +88,7 @@ $application->handle((new ServerRequest())->initFromGlobal());
 
 ---
 
-# 🔗 Router жишээ
+# Router жишээ
 
 ```php
 $this->GET('/hello/{firstname}', [ExampleController::class, 'hello'])->name('hi');
@@ -106,7 +106,7 @@ $this->GET('/sum/{int:a}/{uint:b}', function ($req) {
 
 ---
 
-# 🧭 Controller жишээ
+# Controller жишээ
 
 ```php
 class ExampleController extends Controller
@@ -127,11 +127,11 @@ class ExampleController extends Controller
 
 ---
 
-# 🧅 Middleware жишээ (Onion модель)
+# Middleware жишээ (Onion модель)
 
-### BeforeMiddleware → request шинээр attribute нэмэх  
-### AfterMiddleware → request-ийн хугацааг хэвлэх  
-### OnionMiddleware → before/after лог хэвлэх
+### BeforeMiddleware -> request шинээр attribute нэмэх
+### AfterMiddleware -> request-ийн хугацааг хэвлэх
+### OnionMiddleware -> before/after лог хэвлэх
 
 ```php
 class OnionMiddleware implements MiddlewareInterface
@@ -148,16 +148,16 @@ class OnionMiddleware implements MiddlewareInterface
 
 ---
 
-# ⚠ Алдааны боловсруулалт (ExceptionHandler)
+# Алдааны боловсруулалт (ExceptionHandler)
 
 ```php
 $this->use(new ExceptionHandler());
 ```
 
-- Алдааны код байвал HTTP статус автоматаар тохируулна  
-- Алдааг `error_log` руу бичнэ  
-- HTML error page буцаана  
-- Development mode дээр trace харагдана  
+- Алдааны код байвал HTTP статус автоматаар тохируулна
+- Алдааг `error_log` руу бичнэ
+- HTML error page буцаана
+- Development mode дээр trace харагдана
 
 ```php
 define('CODESAUR_DEVELOPMENT', true); // Development mode идэвхжүүлэх
@@ -165,16 +165,16 @@ define('CODESAUR_DEVELOPMENT', true); // Development mode идэвхжүүлэх
 
 ---
 
-# 🔍 Request боловсруулах дараалал
+# Request боловсруулах дараалал
 
-1. Middleware stack эхнээс нь дуудна  
-2. Router → Match → Callback/Controller action  
-3. Middleware stack буцаад дуусгана  
-4. Response-г хэрэглэгч рүү дамжуулна  
+1. Middleware stack эхнээс нь дуудна
+2. Router -> Match -> Callback/Controller action
+3. Middleware stack буцаад дуусгана
+4. Response-г хэрэглэгч рүү дамжуулна
 
 ---
 
-# 🔧 Custom ExceptionHandler ашиглах
+# Custom ExceptionHandler ашиглах
 
 ```php
 class MyHandler implements ExceptionHandlerInterface {
@@ -189,15 +189,15 @@ $app->use(new MyHandler());
 
 ---
 
-# 📘 Хөгжүүлэлтийн зөвлөмж
+# Хөгжүүлэлтийн зөвлөмж
 
-- PHP 8.2.1+ орчин  
-- Apache + .htaccess rewrite тохиргоотой  (optional)
-- Төсөлдөө MVC хэв маяг авахад маш тохиромжтой  
+- PHP 8.2.1+ орчин
+- Apache + .htaccess rewrite тохиргоотой (optional)
+- Төсөлдөө MVC хэв маяг авахад маш тохиромжтой
 
 ---
 
-## 🧪 Тест ажиллуулах
+## Тест ажиллуулах
 
 ### Composer Test Command-ууд
 
@@ -261,33 +261,33 @@ vendor/bin/phpunit tests/ApplicationTest.php
 
 ---
 
-# 📄 Лиценз
+# Лиценз
 
 Энэ төсөл MIT лицензтэй.
 
 ---
 
-# 📚 Нэмэлт Документаци
+# Нэмэлт Документаци
 
-- 📘 [API](api.md) - Бүрэн API удирдлага, бүх класс болон method-үүдийн дэлгэрэнгүй тайлбар (PHPDoc комментоос Cursor AI үүсгэв)
-- 🔍 [REVIEW](review.md) - Код шалгалтын тайлан, код чанар, архитектур, PSR стандартууд (Cursor AI шинжилсэн)
+- [API](api.md) - Бүрэн API удирдлага, бүх класс болон method-үүдийн дэлгэрэнгүй тайлбар (PHPDoc комментоос Cursor AI үүсгэв)
+- [REVIEW](review.md) - Код шалгалтын тайлан, код чанар, архитектур, PSR стандартууд (Cursor AI шинжилсэн)
 
 ---
 
-# 👨‍💻 Зохиогч
+# Зохиогч
 
 Narankhuu  
-https://github.com/codesaur  
+https://github.com/codesaur
 
 ---
 
-# 🎯 Дүгнэлт
+# Дүгнэлт
 
 `codesaur/http-application` бол:
-- Хөнгөн  
-- Уян хатан  
-- Стандарт мөрдсөн  
-- Энгийн  
-- Хурдан  
+- Хөнгөн
+- Уян хатан
+- Стандарт мөрдсөн
+- Энгийн
+- Хурдан
 
 PHP дээр PSR стандарт нийцсэн өөрийн аппликейшн бүтэцтэй болохыг хүсвэл хамгийн тохиромжтой сонголт юм!

@@ -3,7 +3,7 @@
 namespace codesaur\Http\Application\Example;
 
 /* DEV: v5.2024.09.20
- * 
+ *
  * Example script for demonstrating the usage of codesaur/http-application package.
  *
  * Энэ файл нь:

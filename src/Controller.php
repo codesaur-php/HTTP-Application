@@ -77,7 +77,7 @@ abstract class Controller
      * Query string параметрүүдийг авах.
      *
      * URL-ийн query string-ээс параметрүүдийг авна.
-     * Жишээ: ?page=1&limit=10 → ['page' => '1', 'limit' => '10']
+     * Жишээ: ?page=1&limit=10 -> ['page' => '1', 'limit' => '10']
      *
      * @return array<string, mixed> Query параметрүүдийн массив
      *

@@ -1,24 +1,24 @@
 # Contributing to codesaur/http-application
 
-First of all, thank you for taking the time to contribute ❤️  
-Contributions of any kind are welcome and greatly appreciated!
+First of all, thank you for taking the time to contribute!
+Contributions of any kind are welcome and greatly appreciated.
 
 ---
 
-## 🎯 Ways to Contribute
+## Ways to Contribute
 
 You can contribute by:
 
-- 🐛 **Reporting bugs** - Help us identify and fix issues
-- 💡 **Suggesting new features** - Share your ideas for improvements
-- 📚 **Improving documentation** - Make the docs clearer and more comprehensive
-- 🔧 **Submitting pull requests** - Contribute code improvements and new features
-- ✅ **Writing tests** - Improve test coverage and quality
-- 🔍 **Code review** - Review and provide feedback on pull requests
+- **Reporting bugs** - Help us identify and fix issues
+- **Suggesting new features** - Share your ideas for improvements
+- **Improving documentation** - Make the docs clearer and more comprehensive
+- **Submitting pull requests** - Contribute code improvements and new features
+- **Writing tests** - Improve test coverage and quality
+- **Code review** - Review and provide feedback on pull requests
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -55,7 +55,7 @@ composer test:coverage
 
 ---
 
-## 📋 Development Workflow
+## Development Workflow
 
 ### 1. Create a Branch
 
@@ -112,7 +112,7 @@ Then create a pull request on GitHub.
 
 ---
 
-## 📝 Coding Guidelines
+## Coding Guidelines
 
 ### Code Style
 
@@ -138,15 +138,15 @@ Then create a pull request on GitHub.
 
 ---
 
-## 🔀 Pull Request Guidelines
+## Pull Request Guidelines
 
 ### Before Submitting
 
-- ✅ All tests pass (`composer test`)
-- ✅ Code follows project style guidelines
-- ✅ Documentation is updated (if needed)
-- ✅ Commit messages are clear and descriptive
-- ✅ Branch is up to date with main branch
+- All tests pass (`composer test`)
+- Code follows project style guidelines
+- Documentation is updated (if needed)
+- Commit messages are clear and descriptive
+- Branch is up to date with main branch
 
 ### PR Description Template
 
@@ -178,7 +178,7 @@ How was this tested? Include test commands if applicable.
 
 ---
 
-## 💬 Commit Message Format
+## Commit Message Format
 
 Use [Conventional Commits](https://www.conventionalcommits.org/) format:
 
@@ -214,7 +214,7 @@ refactor(ExceptionHandler): improve error message formatting
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 If your change affects usage or public API:
 
@@ -233,7 +233,7 @@ If your change affects usage or public API:
 
 ---
 
-## 🧪 Testing Commands
+## Testing Commands
 
 The project includes several test commands via Composer:
 
@@ -256,24 +256,24 @@ composer test:unit
 
 ---
 
-## 🏗️ Project Structure
+## Project Structure
 
 Understanding the project structure helps with contributions:
 
 ```
 HTTP-Application/
-├── src/                    # Source code
-│   ├── Application.php    # Core Application class
-│   ├── Controller.php     # Base Controller class
-│   └── ExceptionHandler.php
-├── tests/                  # Test files
-├── example/                # Example implementations
-└── docs/                   # Documentation
++-- src/                    # Source code
+|   +-- Application.php    # Core Application class
+|   +-- Controller.php     # Base Controller class
+|   +-- ExceptionHandler.php
++-- tests/                  # Test files
++-- example/                # Example implementations
++-- docs/                   # Documentation
 ```
 
 ---
 
-## 🤝 Code of Conduct
+## Code of Conduct
 
 ### Our Standards
 
@@ -293,18 +293,18 @@ This project follows a friendly, inclusive open-source culture.
 
 ---
 
-## 🔒 Security Issues
+## Security Issues
 
 **Please do not open public issues for security vulnerabilities.**
 
 For security-related issues, please follow the instructions in [SECURITY.md](SECURITY.md) or contact the maintainer directly:
 
-- 📧 **Email:** codesaur@gmail.com
-- 📲 **Phone:** [+976 99000287](https://wa.me/97699000287)
+- **Email:** codesaur@gmail.com
+- **Phone:** [+976 99000287](https://wa.me/97699000287)
 
 ---
 
-## ❓ Questions?
+## Questions?
 
 If you have questions or need help:
 
@@ -314,7 +314,7 @@ If you have questions or need help:
 
 ---
 
-## 🙏 Recognition
+## Recognition
 
 Contributors will be:
 
@@ -324,6 +324,6 @@ Contributors will be:
 
 ---
 
-Thank you for helping improve the **codesaur ecosystem** 🦖
+Thank you for helping improve the **codesaur ecosystem**!
 
 Your contributions make this project better for everyone!

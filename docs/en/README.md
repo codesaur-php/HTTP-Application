@@ -1,4 +1,4 @@
-# 🦖 codesaur/http-application
+# codesaur/http-application
 
 **Lightweight, flexible HTTP Application core compliant with PSR-7 & PSR-15**
 
@@ -7,42 +7,42 @@
 `codesaur/http-application` is a **minimalist**, **highly flexible**, **middleware-based** Application core built on PSR-7 (HTTP Message) and PSR-15 (HTTP Server RequestHandler/Middleware) standards.
 
 You can:
-- Add Router  
-- Manage Middleware  
-- Use Controller/action  
-- Use Closure routes  
-- Register Exception handler  
-- Use Custom request attributes  
+- Add Router
+- Manage Middleware
+- Use Controller/action
+- Use Closure routes
+- Register Exception handler
+- Use Custom request attributes
 
 and build your desired web application structure with just a few lines of code.
 
 ---
 
-# 🚀 Key Features
+# Key Features
 
-### ✔ PSR-7 Standard ServerRequest + Response  
+### PSR-7 Standard ServerRequest + Response
 Request and Response objects are all **immutable**, fully compliant with the standard.
 
-### ✔ PSR-15 Middleware & RequestHandler Chain Structure  
-Middleware works like an onion (before → action → after).
+### PSR-15 Middleware & RequestHandler Chain Structure
+Middleware works like an onion (before -> action -> after).
 
-### ✔ Flexible Router Integration  
-The package directly supports **codesaur/router**.  
+### Flexible Router Integration
+The package directly supports **codesaur/router**.
 
 Dynamic, typed, multi-method routes can be easily declared.
 
-### ✔ Controller Base Class  
+### Controller Base Class
 Suitable for PHP MVC pattern development.
 
-### ✔ Exception Handler  
+### Exception Handler
 Error handling. Shows trace in development mode. Developers can customize as needed.
 
-### ✔ Extremely Lightweight and Fast  
+### Extremely Lightweight and Fast
 Can be used as a foundation for any framework.
 
 ---
 
-# 📦 Installation
+# Installation
 
 ```
 composer require codesaur/http-application
@@ -50,23 +50,23 @@ composer require codesaur/http-application
 
 ---
 
-# 🧱 Architecture
+# Architecture
 
 ```
 Application
- ├── Middleware stack (PSR-15 + Closure)
- ├── Router (codesaur/router)
- ├── ExceptionHandler
- └── Controller / Closure route executor
+ +-- Middleware stack (PSR-15 + Closure)
+ +-- Router (codesaur/router)
+ +-- ExceptionHandler
+ +-- Controller / Closure route executor
 ```
 
-Application → Middleware → Match route → Controller/action/Closure → Response
+Application -> Middleware -> Match route -> Controller/action/Closure -> Response
 
 ---
 
-# 📝 Usage Examples
+# Usage Examples
 
-## 🔹 Application boot script (index.php)
+## Application boot script (index.php)
 
 ```php
 $application = new class extends Application {
@@ -88,7 +88,7 @@ $application->handle((new ServerRequest())->initFromGlobal());
 
 ---
 
-# 🔗 Router Examples
+# Router Examples
 
 ```php
 $this->GET('/hello/{firstname}', [ExampleController::class, 'hello'])->name('hi');
@@ -106,7 +106,7 @@ $this->GET('/sum/{int:a}/{uint:b}', function ($req) {
 
 ---
 
-# 🧭 Controller Example
+# Controller Example
 
 ```php
 class ExampleController extends Controller
@@ -127,11 +127,11 @@ class ExampleController extends Controller
 
 ---
 
-# 🧅 Middleware Example (Onion Model)
+# Middleware Example (Onion Model)
 
-### BeforeMiddleware → add new attribute to request  
-### AfterMiddleware → print request time  
-### OnionMiddleware → print before/after log
+### BeforeMiddleware -> add new attribute to request
+### AfterMiddleware -> print request time
+### OnionMiddleware -> print before/after log
 
 ```php
 class OnionMiddleware implements MiddlewareInterface
@@ -148,16 +148,16 @@ class OnionMiddleware implements MiddlewareInterface
 
 ---
 
-# ⚠ Error Handling (ExceptionHandler)
+# Error Handling (ExceptionHandler)
 
 ```php
 $this->use(new ExceptionHandler());
 ```
 
-- Automatically sets HTTP status if error code exists  
-- Writes error to `error_log`  
-- Returns HTML error page  
-- Shows trace in development mode  
+- Automatically sets HTTP status if error code exists
+- Writes error to `error_log`
+- Returns HTML error page
+- Shows trace in development mode
 
 ```php
 define('CODESAUR_DEVELOPMENT', true); // Enable development mode
@@ -165,16 +165,16 @@ define('CODESAUR_DEVELOPMENT', true); // Enable development mode
 
 ---
 
-# 🔍 Request Processing Flow
+# Request Processing Flow
 
-1. Middleware stack is called from the beginning  
-2. Router → Match → Callback/Controller action  
-3. Middleware stack completes on return  
-4. Response is sent to the client  
+1. Middleware stack is called from the beginning
+2. Router -> Match -> Callback/Controller action
+3. Middleware stack completes on return
+4. Response is sent to the client
 
 ---
 
-# 🔧 Using Custom ExceptionHandler
+# Using Custom ExceptionHandler
 
 ```php
 class MyHandler implements ExceptionHandlerInterface {
@@ -189,15 +189,15 @@ $app->use(new MyHandler());
 
 ---
 
-# 📘 Development Recommendations
+# Development Recommendations
 
-- PHP 8.2.1+ environment  
+- PHP 8.2.1+ environment
 - Apache + .htaccess rewrite configuration (optional)
-- Very suitable for MVC pattern in your project  
+- Very suitable for MVC pattern in your project
 
 ---
 
-## 🧪 Running Tests
+## Running Tests
 
 ### Composer Test Commands
 
@@ -261,33 +261,33 @@ The project includes GitHub Actions CI/CD workflow. Tests run automatically on p
 
 ---
 
-# 📄 License
+# License
 
 This project is licensed under MIT.
 
 ---
 
-# 📚 Additional Documentation
+# Additional Documentation
 
-- 📘 [API](api.md) - Complete API reference, detailed description of all classes and methods (generated by Cursor AI from PHPDoc comments)
-- 🔍 [REVIEW](review.md) - Code review report, code quality, architecture, PSR standards (analyzed by Cursor AI)
+- [API](api.md) - Complete API reference, detailed description of all classes and methods (generated by Cursor AI from PHPDoc comments)
+- [REVIEW](review.md) - Code review report, code quality, architecture, PSR standards (analyzed by Cursor AI)
 
 ---
 
-# 👨‍💻 Author
+# Author
 
 Narankhuu  
-https://github.com/codesaur  
+https://github.com/codesaur
 
 ---
 
-# 🎯 Conclusion
+# Conclusion
 
 `codesaur/http-application` is:
-- Lightweight  
-- Flexible  
-- Standards compliant  
-- Simple  
-- Fast  
+- Lightweight
+- Flexible
+- Standards compliant
+- Simple
+- Fast
 
 It's the perfect choice if you want to build your own application structure compliant with PSR standards on PHP!

@@ -166,7 +166,7 @@ class Application implements RequestHandlerInterface
             $path = \rawurldecode($request->getUri()->getPath());
 
             // Document root-с гадуур байрлах үед замыг зөв тооцоолох
-            // Жишээ: /subdirectory/index.php → /subdirectory → path-г зөв тохируулах
+            // Жишээ: /subdirectory/index.php -> /subdirectory -> path-г зөв тохируулах
             if (($lngth = \strlen(\dirname($request->getServerParams()['SCRIPT_NAME']))) > 1) {
                 $path = '/' . \ltrim(\substr($path, $lngth), '/');
             }
@@ -182,8 +182,8 @@ class Application implements RequestHandlerInterface
                 throw new \Error("Unknown route pattern [$path]", 404);
             }
 
-            // Route parameters → Request attributes
-            // Жишээ: /user/{int:id} → ['id' => 123] → $request->getAttribute('params')['id']
+            // Route parameters -> Request attributes
+            // Жишээ: /user/{int:id} -> ['id' => 123] -> $request->getAttribute('params')['id']
             $params = [];
             foreach ($rule->getParameters() as $param => $value) {
                 $params[$param] = $value;
@@ -223,7 +223,7 @@ class Application implements RequestHandlerInterface
                 }
 
                 // Route parameters-г action method-ийн аргумент болгон дамжуулна
-                // Жишээ: /user/{int:id} → UserController::show(int $id)
+                // Жишээ: /user/{int:id} -> UserController::show(int $id)
                 $response = \call_user_func_array([$controller, $action], $params);
             }
 
