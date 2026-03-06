@@ -7,7 +7,7 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [6.0.1] - 2026-03-04
+## [6.0.1] - 2026-03-06
 
 ### Changed
 - codesaur/router: ^5.0.0 -> ^5.1.1
