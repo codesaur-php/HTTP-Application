@@ -13,8 +13,8 @@
 - **PSR-7 хэрэгжилт:** Аливаа PSR-7 compliant implementation ашиглаж болно. Бүрэн дэмжинэ
 - **PSR-15 хэрэгжилт:** Бүрэн дэмжинэ
 - **Dependencies:**
-  - codesaur/router (^5.0.0)
-  - codesaur/http-message (^3.0.0)
+  - codesaur/router (^5.1.1)
+  - codesaur/http-message (^3.0.2)
   - psr/http-server-middleware (^1.0.2)
 
 ---

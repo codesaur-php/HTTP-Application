@@ -7,6 +7,18 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [6.0.2] - 2026-03-19
+
+### Changed
+- codesaur/http-message: ^3.0.1 -> ^3.0.2
+  - Fixed PSR-7 header bug: `ServerRequest::initFromGlobal()` `getallheaders()` loop was only storing headers in `$this->serverParams` but not registering them in `$this->headers`
+  - This caused `getHeaderLine()`, `getHeader()`, `hasHeader()` to return empty for all headers except `Host`
+  - Now all headers (`X-CSRF-TOKEN`, `Content-Type`, `Accept`, etc.) are correctly accessible via PSR-7 standard methods
+
+[6.0.2]: https://github.com/codesaur-php/HTTP-Application/compare/v6.0.1...v6.0.2
+
+---
+
 ## [6.0.1] - 2026-03-06
 
 ### Changed
