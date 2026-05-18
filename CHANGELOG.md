@@ -7,6 +7,19 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [6.0.3] - 2026-05-18
+
+### Changed
+- codesaur/router: ^5.1.1 -> ^5.2.0
+  - Adds new `pattern()` method to `RouterInterface` for client-side URL substitution
+  - `pattern('news-view')` -> `/news/{id}/{slug}` (filter prefixes like `{int:}`, `{uint:}`, `{float:}`, `{utf8:}` stripped)
+  - Resolves the long-standing limitation where `generate('route', ['id' => '_PLACEHOLDER_'])` would throw `InvalidArgumentException` for typed parameters
+  - Purely additive change: `match()`, `merge()`, `generate()` behavior unchanged - no source code adaptation required in this package
+
+[6.0.3]: https://github.com/codesaur-php/HTTP-Application/compare/v6.0.2...v6.0.3
+
+---
+
 ## [6.0.2] - 2026-03-19
 
 ### Changed
