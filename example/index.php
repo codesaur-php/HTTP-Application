@@ -2,17 +2,16 @@
 
 namespace codesaur\Http\Application\Example;
 
-/* DEV: v5.2024.09.20
- *
- * Example script for demonstrating the usage of codesaur/http-application package.
+/* codesaur/http-application - Example
  *
  * Энэ файл нь:
  *  - Autoload тохируулах
- *  - Application үүсгэх
- *  - Middleware-үүд холбох
- *  - Router бүртгэх
- *  - Controller болон Closure маршрутууд тодорхойлох
+ *  - Application үүсгэх (Application нь Router-гүй үүснэ)
+ *  - Global middleware-үүд use()-ээр бүртгэх
+ *  - Router instance-ууд үүсгэн route-уудыг бүртгэж use()-ээр нэмэх
+ *  - Per-route middleware-ийг route дээр ->middleware([...])-ээр хавсаргах
  *  - HTTP хүсэлтийг PSR-7 ServerRequest ашиглан боловсруулах
+ *  - Сонголтот: Application-ийг URL prefix-д mount хийх
  *
  * Энэ нь багцыг бодит төсөлд хэрхэн ашиглахыг харуулах демо юм.
  */
@@ -25,7 +24,9 @@ namespace codesaur\Http\Application\Example;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
+use codesaur\Router\Router;
 use codesaur\Http\Message\ServerRequest;
+use codesaur\Http\Message\NonBodyResponse;
 use codesaur\Http\Application\Application;
 use codesaur\Http\Application\ExceptionHandler;
 
@@ -48,13 +49,14 @@ $application = new class extends Application
      * Энд дараах бүртгэлүүд хийгдэнэ:
      * 1. Exception handler бүртгэх
      * 2. Middleware-үүд бүртгэх (Before, After, Onion)
-     * 3. Router бүртгэх (ExampleRouter)
-     * 4. Route-үүд бүртгэх (GET, POST, Closure, Controller)
+     * 3. ExampleRouter (модулийн router) бүртгэх
+     * 4. Inline route-уудыг тусдаа Router instance дээр бүртгэх
      * 5. Tail middleware бүртгэх (route execution info хэвлэх)
      */
     public function __construct()
     {
-        parent::__construct();
+        // Fallback хариуны prototype-ийг base Application руу дамжуулна
+        parent::__construct(new NonBodyResponse());
 
         // Exception handler бүртгэх
         $this->use(new ExceptionHandler());
@@ -64,19 +66,22 @@ $application = new class extends Application
         $this->use(new AfterMiddleware());
         $this->use(new OnionMiddleware());
 
-        // Router бүртгэх
+        // Modular router
         $this->use(new ExampleRouter());
 
+        // Inline routes - тусдаа Router instance дээр бүртгээд use() хийнэ
+        $inline = new Router();
+
         // Controller route
-        $this->GET('/', [ExampleController::class, 'index']);
+        $inline->GET('/', [ExampleController::class, 'index']);
 
         // Closure + Controller route
-        $this->GET('/home', function ($req) {
+        $inline->GET('/home', function ($req) {
             (new ExampleController($req))->index();
         })->name('home');
 
         // Dynamic params
-        $this->GET('/hello/{firstname}/{lastname}', function (ServerRequestInterface $req) {
+        $inline->GET('/hello/{firstname}/{lastname}', function (ServerRequestInterface $req) {
             $fullname = $req->getAttribute('params')['firstname']
                       . ' ' . $req->getAttribute('params')['lastname'];
 
@@ -84,7 +89,7 @@ $application = new class extends Application
         })->name('hello');
 
         // POST route
-        $this->POST('/hello/post', function (ServerRequestInterface $req) {
+        $inline->POST('/hello/post', function (ServerRequestInterface $req) {
             $payload = $req->getParsedBody();
 
             if (empty($payload['firstname'])) {
@@ -98,6 +103,23 @@ $application = new class extends Application
 
             (new ExampleController($req))->hello($user);
         });
+
+        // Per-route middleware - зөвхөн ЭНЭ route дээр ажиллана (global stack-д орохгүй).
+        // Route-ийг fluent ->middleware([...])-ээр хавсаргана. Жагсаалт нь
+        // MiddlewareInterface instance, Closure, эсвэл class-string (lazy
+        // instantiate) дэмжинэ; олон удаа дуудвал append семантик.
+        $inline->GET('/guarded', function (ServerRequestInterface $req) {
+            (new ExampleController($req))->index();
+        })->name('guarded')->middleware([
+            // Closure middleware - энэ route-д орохын өмнө ажиллана
+            function (ServerRequestInterface $request, RequestHandlerInterface $handler) {
+                echo '<span style="color:teal">[route middleware] /guarded дээр ажиллав</span><br/>';
+                return $handler->handle($request);
+            },
+            // class-string ч мөн ажиллана (жишээ): OnionMiddleware::class
+        ]);
+
+        $this->use($inline);
 
         /**
          * Tail middleware - route гүйцэтгэлийн мэдээлэл хэвлэх.
@@ -129,16 +151,20 @@ $application = new class extends Application
                 $uri_path = '/';
             }
 
-            $callback = $this->match($uri_path, $request->getMethod());
-            $callable = $callback->getCallable();
+            // Application::match() нь [callable, params, middleware] tuple буцаана
+            $matched = $this->match($uri_path, $request->getMethod());
 
             echo '<br/><br/><span style="color:maroon">';
-            if (!$callable instanceof \Closure) {
-                $controller = $callable[0];
-                $action = $callable[1];
-                echo "Application executing an action [{$action}] from controller [{$controller}]";
+            if ($matched === null) {
+                echo 'No route matched';
             } else {
-                echo 'Application executing a callback';
+                [$callable] = $matched;
+                if ($callable instanceof \Closure) {
+                    echo 'Application executing a callback';
+                } else {
+                    [$controller, $action] = $callable;
+                    echo "Application executing an action [{$action}] from controller [{$controller}]";
+                }
             }
             echo '.</span><br/><br/>';
 

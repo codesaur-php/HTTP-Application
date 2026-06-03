@@ -10,8 +10,10 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 use codesaur\Http\Message\ServerRequest;
 use codesaur\Http\Message\Uri;
+use codesaur\Http\Message\NonBodyResponse;
 use codesaur\Http\Application\Application;
 use codesaur\Http\Application\Tests\TestHelper;
+use codesaur\Router\Router;
 
 /**
  * Performance Tests
@@ -25,10 +27,13 @@ use codesaur\Http\Application\Tests\TestHelper;
 class PerformanceTest extends TestCase
 {
     private Application $app;
+    private Router $router;
 
     protected function setUp(): void
     {
-        $this->app = new Application();
+        $this->app = new Application(new NonBodyResponse());
+        $this->router = new Router();
+        $this->app->use($this->router);
     }
 
     public function testManyMiddlewarePerformance(): void
@@ -43,7 +48,7 @@ class PerformanceTest extends TestCase
             });
         }
 
-        $this->app->GET('/test', function ($req) {
+        $this->router->GET('/test', function ($req) {
             echo 'test';
         });
 
@@ -63,7 +68,7 @@ class PerformanceTest extends TestCase
     {
         // 100 route нэмэх
         for ($i = 0; $i < 100; $i++) {
-            $this->app->GET("/route$i", function ($req) {
+            $this->router->GET("/route$i", function ($req) {
                 echo "route$i";
             });
         }
@@ -83,7 +88,7 @@ class PerformanceTest extends TestCase
 
     public function testRepeatedRequestsPerformance(): void
     {
-        $this->app->GET('/test', function ($req) {
+        $this->router->GET('/test', function ($req) {
             echo 'test';
         });
 
@@ -116,7 +121,7 @@ class PerformanceTest extends TestCase
             });
         }
 
-        $this->app->GET('/test', function ($req) {
+        $this->router->GET('/test', function ($req) {
             echo 'test';
         });
 
@@ -144,7 +149,7 @@ class PerformanceTest extends TestCase
         ];
 
         foreach ($patterns as $pattern) {
-            $this->app->GET($pattern, function ($req) {
+            $this->router->GET($pattern, function ($req) {
                 echo 'matched';
             });
         }
@@ -166,7 +171,7 @@ class PerformanceTest extends TestCase
 
         // 1000 route нэмэх
         for ($i = 0; $i < 1000; $i++) {
-            $this->app->GET("/route$i/{int:param}", function ($req) {
+            $this->router->GET("/route$i/{int:param}", function ($req) {
                 echo 'test';
             });
         }
@@ -180,7 +185,7 @@ class PerformanceTest extends TestCase
 
     public function testConcurrentRequestSimulation(): void
     {
-        $this->app->GET('/test', function ($req) {
+        $this->router->GET('/test', function ($req) {
             usleep(1000); // 1ms delay
             echo 'test';
         });

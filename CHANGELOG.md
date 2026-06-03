@@ -7,6 +7,101 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [7.0.0] - 2026-06-03
+
+Major architectural overhaul: separation of concerns, no magic API, multi-router delegation, mount feature, and PSR-7-only HTTP message coupling (the fallback response is injected via the constructor).
+
+### Added
+- **Multi-router delegation** in `Application` (in response to `Router::merge()` being removed in codesaur/router v6):
+  - `Application::use(RouterInterface)` - add Routers to the Application
+  - `Application::match()`, `generate()`, `pattern()`, `getRoutes()` - explicit methods that delegate across all Routers
+  - `Application::getRouters()` - return the normal Routers registered via use() (introspection)
+  - Order: use() registration order (first-added-wins) - the earliest-added router wins, a predictable default
+  - generate/pattern: first-found-wins (silent on name collision)
+  - getRoutes: aggregate, first-found-wins on (pattern, method) collision
+- **Explicit route override (override lane)** in `Application`:
+  - `Application::override(RouterInterface)` - add a Router that intentionally overrides a previously registered route (fluent, returns `$this`)
+  - The override lane is checked before the normal routers in match/generate/pattern/getRoutes - so it wins regardless of registration order
+  - `Application::getOverrides()` - return the override-lane Routers (introspection)
+  - Explicit-override best practice - override is a visible, intentional action (not implicit)
+- **`Application::__construct(ResponseInterface $responsePrototype)`** - the fallback response prototype is taken via the constructor. When a handler returns a non-ResponseInterface value, `handle()` returns `clone $responsePrototype`. The concrete Response is injected externally, so the package depends only on the PSR-7 interface.
+- **`Application::mount(string $prefix)`** - fluent method to mount the Application at a URL prefix:
+  ```php
+  $router = new Router();
+  $router->GET('/users', $handler);
+
+  $app = new Application(new NonBodyResponse());
+  $app->use($router);
+  $app->mount('/dashboard');
+  // /dashboard/users -> matches the Router's /users
+  // generate('users') -> '/dashboard/users'
+  ```
+- **`Application::getMountPath()`** - return the configured mount path (introspection)
+- Mount-aware route resolution:
+  - `match()` automatically strips the mount prefix from the request path before delegating to Routers
+  - `generate()`, `pattern()` automatically prepend the mount prefix to the returned URL
+  - `getRoutes()` returns full URL patterns including the mount prefix
+  - A path outside the mount prefix returns `null` (no route match)
+  - Boundary protection: `/dashboard` does not match `/dashboardx`
+- Per-route middleware strict validation: a value that is not a MiddlewareInterface, Closure, or class-string throws `InvalidArgumentException`.
+
+### Removed
+- **BREAKING**: the `__call()` magic method was removed. Shortcuts like `$app->GET(...)` no longer exist. To register routes you must create an explicit Router instance and call `use($router)`.
+- **BREAKING**: the constructor no longer auto-creates a Router. The Application is created with no Router, and `getRouters()` initially returns `[]`.
+- **BREAKING**: the "primary router" concept was removed. All Routers are equal - matching follows registration order only.
+- **BREAKING**: codesaur/http-message was removed from `require`. The response fallback is no longer hard-wired to the concrete `NonBodyResponse` and now depends only on the PSR-7 `ResponseInterface` - the concrete implementation is chosen by the user and passed via the constructor.
+
+### Changed
+- **BREAKING**: the constructor signature changed: v6's `__construct()` (which auto-created a Router) -> `__construct(ResponseInterface $responsePrototype)`. `new Application()` and `new Application($router)` no longer work - a PSR-7 response must be passed (e.g. `new Application(new NonBodyResponse())`). Subclasses forward it via `parent::__construct($response)`.
+- **BREAKING**: the `'application'` request attribute is now the Application instance itself (previously named `'router'` and a Router instance). Calling `$req->getAttribute('application')->generate($name)` from a Controller automatically prepends the mount prefix.
+- **BREAKING**: the fallback for a handler returning a non-ResponseInterface value is no longer the hard-coded `new NonBodyResponse()` but `clone $responsePrototype` from the constructor-provided prototype.
+- `Application::$router : RouterInterface` -> `Application::$routers : list<RouterInterface>` (internal).
+- `Application::use()` now accepts RouterInterface.
+- route matching inside `handle()` now calls `Application::match()` - mount prefix stripping is centralized in one place.
+
+### Dependencies
+- codesaur/router: ^5.x -> ^6.0.0
+- added psr/http-message (^2.0) - ResponseInterface
+- codesaur/http-message: `require` -> `suggest` + `require-dev` (used in tests and the example; not required downstream)
+
+### Migration
+
+V6 (before):
+```php
+$app = new Application();
+$app->GET('/home', $handler);
+```
+
+V7 (now):
+```php
+use codesaur\Http\Message\NonBodyResponse;   // or any PSR-7 ResponseInterface
+
+$router = new Router();
+$router->GET('/home', $handler);
+$app = new Application(new NonBodyResponse());
+$app->use($router);
+```
+
+A subclass forwards the response to the parent:
+```php
+use Psr\Http\Message\ResponseInterface;
+
+class WebApplication extends Application
+{
+    public function __construct(ResponseInterface $response)
+    {
+        parent::__construct($response);
+        // ...
+    }
+}
+```
+
+Controller URL generation: `$req->getAttribute('router')` -> `$req->getAttribute('application')`.
+
+[7.0.0]: https://github.com/codesaur-php/HTTP-Application/compare/v6.0.3...v7.0.0
+
+---
+
 ## [6.0.3] - 2026-05-18
 
 ### Changed

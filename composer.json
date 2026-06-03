@@ -13,9 +13,12 @@
         }
     ],
     "require": {
+        "psr/http-message": "^2.0",
         "psr/http-server-middleware": "^1.0.2",
-        "codesaur/router": "^5.2.0",
-        "codesaur/http-message": "^3.0.2"
+        "codesaur/router": "^6.0.0"
+    },
+    "suggest": {
+        "codesaur/http-message": "PSR-7 implementation; NonBodyResponse-ийг fallback хариуны prototype болгон Application constructor-д дамжуулж болно (^3.0.3)"
     },
     "autoload": {
         "psr-4": {
@@ -28,7 +31,8 @@
         }
     },
     "require-dev": {
-        "phpunit/phpunit": "^10.0"
+        "phpunit/phpunit": "^10.0",
+        "codesaur/http-message": "^3.0.3"
     },
     "scripts": {
         "test": "phpunit",

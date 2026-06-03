@@ -1,6 +1,6 @@
 # Package Review: codesaur/http-application
 
-Энэхүү баримт бичиг нь `codesaur/http-application` package-ийг бүхэлд нь review хийж, код чанар, архитектур, PSR-7 & PSR-15 нийцтэй байдал, ашиглалтын боломж зэрэг олон талыг үнэлсэн баримт бичиг юм.
+`codesaur/http-application` package-ийн код чанар, архитектур, PSR стандартуудын нийцтэй байдал, ашиглалтын боломжийг үнэлсэн баримт бичиг.
 
 ---
 
@@ -10,278 +10,154 @@
 - **PHP хувилбар:** ^8.2.1
 - **Лиценз:** MIT
 - **Хөгжүүлэгч:** Narankhuu (codesaur@gmail.com)
-- **PSR-7 хэрэгжилт:** Аливаа PSR-7 compliant implementation ашиглаж болно. Бүрэн дэмжинэ
+- **PSR-7 хэрэгжилт:** Аливаа PSR-7 compliant implementation ашиглаж болно
 - **PSR-15 хэрэгжилт:** Бүрэн дэмжинэ
 - **Dependencies:**
-  - codesaur/router (^5.1.1)
-  - codesaur/http-message (^3.0.2)
-  - psr/http-server-middleware (^1.0.2)
+  - psr/http-message
+  - psr/http-server-middleware
+  - codesaur/router
+- **Санал болгосон:**
+  - codesaur/http-message (constructor-д дамжуулах `ResponseInterface` prototype-ийн тохиромжтой эх сурвалж; аль ч PSR-7 implementation ажиллана)
+
+---
+
+## Дизайны зарчмууд
+
+### Цэвэр separation of concerns
+
+Application нь route бүртгэлийн логикийг агуулдаггүй - энэ нь Router-ийн л хариуцлага. Application бол middleware pipeline coordinator + multi-router delegator + mount-aware URL coordinator.
+
+- **Router**: route бүртгэлт, match
+- **Application**: middleware pipeline + multi-router coordination + mount
+- **Controller**: business logic
+- **ExceptionHandler**: error handling
+
+### Magic API байхгүй
+
+`$app->GET(...)` гэх мэт shortcut байхгүй. Route бүгд explicit Router instance дээр бүртгэгдэх ёстой. Энэ нь IDE-friendly, type-safe, шинэ developer-д тодорхой mental model өгдөг.
+
+### Router бүр нэг түвшинд - эхэлж бүртгүүлсэн нь давуу
+
+Аль нэг Router онцгой буюу дээгүүр биш - бүгд нэг түвшинд байрладаг. Гэхдээ route хайх (match) үед эхэлж бүртгүүлсэн Router давуу талтай: ижил path-д хэд хэдэн Router таарвал use()-ийн дарааллаар эхэлж нэмэгдсэн нь ялна (first-added-wins). Өмнө бүртгэсэн route-ийг зориудаар дарж бичихийг хүсвэл explicit `override()` lane ашиглана.
 
 ---
 
 ## Давуу талууд
 
-### 1. PSR-15 Бүрэн Нийцтэй Байдал
-
-**Онцлог:**
+### 1. PSR-15 бүрэн нийцтэй
 - `RequestHandlerInterface` бүрэн хэрэгжсэн
 - `MiddlewareInterface` дэмжинэ
+- Onion-model middleware chain зөв хэрэгжсэн
 - PSR-15 стандартын шаардлагуудыг бүрэн хангасан
-- Onion model middleware chain зөв хэрэгжсэн
 
-**Хэрэгжүүлсэн interface-үүд:**
-- `RequestHandlerInterface` (Application класс)
-- `MiddlewareInterface` (дэмжинэ)
-- PSR-7 `ServerRequestInterface` (аливаа PSR-7 implementation-ээс)
+### 2. Multi-router delegation
+- Олон Router instance-ийг нэг Application-д нэгтгэх боломж
+- First-added-wins эрэмбэ (use() registration order) + explicit override() lane
+- Module-based архитектурт тохиромжтой (ApiRouter, AdminRouter, etc.)
 
-### 2. Цэвэр Архитектур
+### 3. Mount feature
+- Application-ийг URL prefix-д суулгах
+- Router-ууд prefix-naive (reusable)
+- Generate/pattern/getRoutes-д mount prefix авто-нэмэгдэх
+- Boundary protection (/dashboard != /dashboardx)
 
-**Онцлог:**
-- `Application` класс нь цөм функцүүдийг агуулна
-- `Controller` abstract класс нь MVC хэв маягийг дэмжинэ
-- `ExceptionHandler` нь алдааны боловсруулалтыг тусгаарлана
-- Классуудын хоорондын хамаарал тодорхой, логик байрлалтай
+### 4. Per-route middleware
+- MiddlewareInterface instance
+- Closure
+- class-string (lazy instantiation)
+- Strict validation - буруу type-ийг fail-fast
 
-**Код бүтэц:**
-```
-Application (implements RequestHandlerInterface)
-+-- Router (codesaur/router)
-+-- Middleware Stack
-+-- Controller (abstract)
-|   +-- User Controllers extend
-+-- ExceptionHandler (implements ExceptionHandlerInterface)
-```
+### 5. `'application'` attribute = Application
+`$request->getAttribute('application')` нь Application instance буцаана. Controller-аас mount-aware URL generate хийх боломжтой.
 
-### 3. Бүрэн PHPDoc Тайлбар
-
-**Онцлог:**
-- Бүх класс, метод, property-д бүрэн PHPDoc тайлбар бичигдсэн
-- Parameter, return type, exception-үүдийг тодорхой заасан
-- @example annotation ашигласан (олон жишээтэй)
-- Монгол хэл дээр тайлбар байна
-- API.md файл байна
-- Дэлгэрэнгүй тайлбар, жишээнүүд, execution flow тайлбарласан
-- Anonymous class-ууд, middleware chain, route matching зэрэг нарийн хэсгүүд тайлбарлагдсан
-
-### 4. Уян Хатан Middleware Систем
-
-**Онцлог:**
-- PSR-15 MiddlewareInterface дэмжинэ
-- Closure middleware дэмжинэ
-- Onion model (before -> handler -> after)
-- Middleware chain зөв ажиллана
-- Router merge дэмжинэ
-
-**Код чанар:**
-- Middleware queue сайн удирдагдана
-- Anonymous class ашиглан runner үүсгэнэ
-- Request/Response immutable зарчмыг хадгална
-
-### 5. Router Интеграци
-
-**Онцлог:**
-- codesaur/router-тэй бүрэн интеграци
-- Magic method (`__call()`) ашиглан Router method-үүдийг шууд дуудана
-- Dynamic route parameters
-- Typed parameters (int, uint, float)
-- Multi-method routes
-- Named routes
-
-**Код чанар:**
-- Route parameters автоматаар Request attributes болно
-- Router instance Request attribute-д нэмэгдэнэ
-- Path normalization зөв хийгдэнэ
-
-### 6. Controller Суурь Класс
-
-**Онцлог:**
-- Abstract Controller класс нь shortcut method-үүдийг агуулна
-- Request мэдээлэлд хялбар хандах
-- getParsedBody(), getQueryParams(), getAttributes() method-үүд
-- MVC хэв маягийг дэмжинэ
-
-**Код чанар:**
-- Final method-үүд нь override хийхгүй байхыг хангана
-- Type hints зөв ашигласан
-- Null safety (getParsedBody() null бол [] буцаана)
+### 6. Бүрэн PHPDoc тайлбар
+- Бүх класс, метод, property-д PHPDoc
+- Parameter, return type, exception тодорхой
+- @example annotation олон жишээтэй
+- Монгол хэлээр тайлбар
 
 ### 7. Exception Handler
-
-**Онцлог:**
 - ExceptionHandlerInterface хэрэгжүүлсэн
 - HTTP status code автоматаар тохируулна
 - Error log руу бичнэ
 - HTML error page үүсгэнэ
-- Development mode дээр stack trace харуулна
+- Development mode-д stack trace харуулна
 
-**Код чанар:**
-- ReasonPhrase class ашиглан status code шалгана
-- getHost() method нь HTTPS/HTTP зөв тодорхойлно
-- CODESAUR_DEVELOPMENT constant ашиглана
+### 8. Тест хамрах хүрээ
+- **Нийт тест:** 96
+- **Assertion:** 149
+- **Категори:**
+  - Unit: Application, Controller, ExceptionHandler
+  - Integration: бүх компонент хамтдаа
+  - Edge case: mount, multi-router, boundary
+  - Performance: гүйцэтгэл
 
-### 8. Тест Хамрах Хүрээ
-
-**Онцлог:**
-- PHPUnit ашиглан бүрэн тест хийгдсэн
-- Бүх классуудын тест файлууд байна
-- CI/CD pipeline байна (GitHub Actions)
-- Edge case тестүүд нэмэгдсэн
-- Integration тестүүд нэмэгдсэн
-- Performance тестүүд нэмэгдсэн
-
-**Тестүүдийн тоо:**
-- **Нийт тест:** 64 тест
-- **Assertion:** 91 assertion
-- **Unit тестүүд:** 15 тест
-- **Integration тестүүд:** 7 тест
-- **Edge case тестүүд:** 10 тест
-- **Performance тестүүд:** 7 тест
-
-**Test Coverage:**
-- **Lines:** 91.11% (82/90 мөр)
-- **Methods:** 83.33% (10/12 метод)
-- **Classes:** 66.67% (2/3 класс)
-
-**Coverage дэлгэрэнгүй:**
-- `Application`: 86.44% lines, 50.00% methods
-- `Controller`: 100.00% lines, 100.00% methods
-- `ExceptionHandler`: 100.00% lines, 100.00% methods
-
-**Тестүүдийн хамрах хүрээ:**
-- Бүх public method-ууд тест хийгдсэн
-- Edge case-ууд бас тест хийгдсэн
-- Middleware chain тест хийгдсэн
-- Route matching тест хийгдсэн
-- Integration тестүүд байна
-- Performance тестүүд байна
-
-### 9. Документаци
-
-**Онцлог:**
-- README.md маш сайн бичигдсэн (347 мөр)
-- API.md файл байна (498 мөр)
-- PHPDoc бүрэн байна
-- Example файлууд байна
-- OS тус бүрээр тест ажиллуулах заавар байна
+### 9. Документ
+- README.md (Mongolian + English)
+- API.md дэлгэрэнгүй reference
+- CHANGELOG.md
+- Example файлууд
 
 ### 10. CI/CD Pipeline
-
-**Онцлог:**
-- GitHub Actions workflow байна
+- GitHub Actions workflow
 - PHP 8.2, 8.3, 8.4 дээр тестлэнэ
 - Ubuntu, Windows, macOS дээр тестлэнэ
 - Codecov coverage report
-- Автоматаар тест ажиллуулна
 
 ---
 
-## Сайжруулах Боломжтой Хэсгүүд
+## Сайжруулах боломжтой хэсгүүд
 
-### 1. Error Handling
+### 1. Custom Exception классууд
 
 **Одоогийн байдал:**
 - Route олдохгүй үед `\Error` exception шиднэ
 - Controller class байхгүй үед `\Error` exception шиднэ
+- Per-route middleware invalid үед `\InvalidArgumentException`
 
 **Санал:**
-- Custom exception классууд үүсгэх (RouteNotFoundException, ControllerNotFoundException)
-- Exception-үүдийн мессежүүдэд илүү дэлгэрэнгүй мэдээлэл нэмэх
+- Custom exception классууд үүсгэх (RouteNotFoundException, ControllerNotFoundException, etc.)
 
-### 2. Response Handling
+### 2. Response Helper
 
 **Одоогийн байдал:**
-- Controller/Closure ResponseInterface буцаахгүй бол NonBodyResponse fallback
+- Controller/Closure ResponseInterface буцаахгүй бол constructor-оор өгсөн хариуны prototype-оос clone хийж fallback болгоно
 
 **Санал:**
-- Response builder helper нэмэх
-- JSON response helper нэмэх
-- Redirect response helper нэмэх
+- Response builder helper (JSON, redirect, etc.)
 
-### 3. Middleware Priority
+### 3. Route Caching
 
 **Одоогийн байдал:**
-- Middleware-үүд дарааллаар нь ажиллана (queue дараалал)
+- Route-ууд runtime дээр match хийгддэг
 
 **Санал:**
-- Middleware priority system нэмэх
-- Middleware groups нэмэх
-- Route-specific middleware нэмэх
-
-### 4. Documentation
-
-**Одоогийн байдал:**
-- README.md маш сайн бичигдсэн
-- API.md файл байна
-- PHPDoc бүрэн байна
-
-**Санал:**
-- CHANGELOG.md нэмэх (version history)
-- Migration guide (version upgrade)
-
-### 5. Performance
-
-**Одоогийн байдал:**
-- Код нь ерөнхийдөө хурдан ажиллана
-- Performance тестүүд байна
-
-**Санал:**
-- Route caching нэмэх (production environment)
-- Middleware caching нэмэх
-- Request/Response object pooling
+- Production environment-д route caching нэмэх
 
 ---
 
-## Код Чанарын Үнэлгээ
+## Код чанарын үнэлгээ
 
-### Маш Сайн Хэсгүүд
+### Маш сайн хэсгүүд
 
 1. **PSR-15 Compliance:** 5/5
-   - RequestHandlerInterface бүрэн хэрэгжсэн
-   - MiddlewareInterface дэмжинэ
-   - Стандартын шаардлагуудыг хангасан
+2. **Separation of Concerns:** 5/5
+3. **Code Organization:** 5/5
+4. **Documentation:** 5/5
+5. **Testing:** 5/5 (96 тест)
+6. **Middleware System:** 5/5
+7. **Multi-router architecture:** 5/5
+8. **Mount feature:** 5/5
 
-2. **Code Organization:** 5/5
-   - Классуудын бүтэц тодорхой
-   - Namespace зөв ашигласан
-   - Код цэгцтэй, уншихад хялбар
-   - Single Responsibility Principle дагана
+### Сайн хэсгүүд
 
-3. **Documentation:** 5/5
-   - PHPDoc бүрэн байна, дэлгэрэнгүй тайлбар, жишээнүүдтэй
-   - README.md маш сайн бичигдсэн
-   - API.md файл байна
-   - Жишээ код агуулна
-   - Бүх method-үүдэд @example tag-үүд байна
-
-4. **Testing:** 5/5
-   - 64 тест байна
-   - Unit, Integration, Edge case, Performance тестүүд
-   - CI/CD pipeline байна
-   - Code coverage сайн
-
-5. **Middleware System:** 5/5
-   - PSR-15 стандартад нийцсэн
-   - Onion model зөв хэрэгжсэн
-   - Closure middleware дэмжинэ
-   - Flexible болон powerful
-
-### Сайн Хэсгүүд
-
-1. **Error Handling:** 4/5
-   - Exception-үүд зөв ашигласан
-   - Гэхдээ custom exception классууд байхгүй
-
-2. **Performance:** 4/5
-   - Ерөнхийдөө хурдан
-   - Гэхдээ route caching байхгүй
-
-3. **Response Handling:** 4/5
-   - NonBodyResponse fallback байна
-   - Гэхдээ response helper method-үүд байхгүй
+1. **Error Handling:** 4/5 (custom exception классууд байхгүй)
+2. **Performance:** 4/5 (route caching байхгүй)
+3. **Response Handling:** 4/5 (response builder helper байхгүй)
 
 ---
 
-## Ашиглалтын Тохиромж
+## Ашиглалтын тохиромж
 
 ### Framework-agnostic
 
@@ -294,25 +170,28 @@ Package нь framework-agnostic тул:
 
 ### Use Cases
 
-Package нь дараах use case-үүдэд тохиромжтой:
-
 1. **HTTP Application цөм**
    - REST API хөгжүүлэлт
    - Web application хөгжүүлэлт
-   - Microservice хөгжүүлэлт
+   - Microservice архитектур
+   - Sub-application mounting (admin panel, API versioning)
 
-2. **Middleware хөгжүүлэлт**
-   - Authentication middleware
-   - Authorization middleware
-   - Logging middleware
-   - CORS middleware
+2. **Multi-module application**
+   - Module бүрд өөрийн Router
+   - Application-аас бүгдийг нэгтгэх
+   - Reusable Router (mount-ээр өөр өөр prefix-д ашиглах)
 
-3. **MVC хэв маяг**
+3. **Middleware хөгжүүлэлт**
+   - Authentication, Authorization
+   - Logging, CORS, Rate limiting
+   - Per-route эсвэл global
+
+4. **Controller/action хэв маяг**
    - Controller-based routing
    - Action-based routing
-   - Route parameters
+   - Route parameters (typed)
 
-4. **Exception Handling**
+5. **Exception Handling**
    - Global exception handler
    - Custom error pages
    - Development mode debugging
@@ -328,168 +207,119 @@ Package нь дараах use case-үүдэд тохиромжтой:
 | PSR-15 Compliance | Бүрэн | Бүрэн | Бүрэн |
 | PSR-7 Compliance | Бүрэн | Бүрэн | Бүрэн |
 | Middleware System | Onion model | Onion model | Onion model |
-| Router Integration | codesaur/router | Built-in | Built-in |
+| Multi-router | **Бий (built-in)** | group()-аар | Pipe-аар |
+| Mount feature | **Бий (built-in)** | setBasePath() | Path-conditional pipe |
+| Router Integration | RouterInterface (pluggable) | Built-in | Pluggable |
+| Magic API | **Байхгүй (цэвэр)** | $app->get() | Pipe-only |
 | Controller Base | Abstract class | Байхгүй | Interface |
 | Exception Handler | Built-in | Manual | Manual |
 | Dependencies | 3 packages | Олон | Олон |
-| Documentation | Маш сайн | Сайн | Сайн |
 | Size | Хөнгөн | Дунд | Том |
+
+> **Router Integration:** Application нь зөвхөн `RouterInterface`-д тулгуурладаг (default нь codesaur/router-аас ирдэг). `RouterInterface`-ийг шууд implement хийх, эсвэл гуравдагч этгээдийн router-ийг adapter-аар боож хүссэн router-ээ залгаж болно - Application нь нэг тодорхой router implementation-д уягдаагүй.
 
 ---
 
-## Аюулгүй Байдал
+## Аюулгүй байдал
 
-### Сайн Хийгдсэн
+### Сайн хийгдсэн
 
 1. **Input Validation**
    - Route parameters type validation (int, uint, float)
    - Controller class existence check
    - Method existence check
+   - Per-route middleware type validation
 
 2. **Path Normalization**
-   - URL encoding/decoding зөв хийгдсэн
-   - Path traversal protection (dirname() ашиглана)
+   - URL encoding/decoding зөв
+   - Path traversal protection
    - Empty path handling
+   - Mount boundary protection (/dashboard != /dashboardx)
 
 3. **Exception Handling**
-   - Exception-үүд зөв шидэгдэнэ
+   - Exception зөв шидэгдэнэ
    - Error code зөв тохируулна
-   - Error log руу бичнэ
+   - Error log
 
-### Анхаарах Зүйлс
+### Анхаарах зүйлс
 
 1. **Route Pattern Injection**
-   - Route pattern-ууд нь developer-ээс ирдэг тул аюулгүй
-   - Хэрэв user input-аас шууд ирвэл нэмэлт шалгалт хийх хэрэгтэй
+   - Route pattern developer-ээс л ирдэг
+   - User input-аас шууд ирвэл шалгалт хийх
 
 2. **Controller Injection**
-   - Controller class name-ууд нь developer-ээс ирдэг тул аюулгүй
-   - Хэрэв user input-аас шууд ирвэл whitelist шалгалт хийх хэрэгтэй
+   - Controller class name developer-ээс л ирдэг
+   - User input-аас шууд ирвэл whitelist хийх
 
 ---
 
 ## Гүйцэтгэл
 
-### Сайн Хийгдсэн
+### Сайн хийгдсэн
 
-1. **Middleware Chain**
-   - Onion model нь эрчим хүчний үр ашигтай
-   - Олон middleware байсан ч гүйцэтгэл сайн
+1. **Middleware Chain** - Onion model, queue удирдлага сайн
+2. **Route Matching** - codesaur/router нь хурдан pattern matching
+3. **Multi-router** - first-added-wins зарчмаар хурдан break (override lane эхэлж шалгагдана)
+4. **Mount strip** - O(1) prefix зүсэлт, str_starts_with
+5. **Memory Usage** - Жижиг объектууд
 
-2. **Route Matching**
-   - codesaur/router нь хурдан pattern matching хийх
-   - Олон route байсан ч гүйцэтгэл сайн
+### Сайжруулах боломжууд
 
-3. **Memory Usage**
-   - Жижиг объектууд
-   - Array-ууд нь memory-д хэт их зай эзлэхгүй
-
-### Сайжруулах Боломжууд
-
-1. **Route Caching**
-   - Одоогийн байдлаар route-ууд нь runtime дээр match хийгддэг
-   - Хэрэв route-ууд их байвал cache хийх нь илүү сайн байх болно
-
-2. **Middleware Caching**
-   - Middleware queue-г cache хийх
-   - Production environment-д гүйцэтгэлийг сайжруулах
-
-3. **Request/Response Pooling**
-   - Object pooling ашиглах
-   - Memory allocation багасгах
+1. **Route Caching** - production-д route-уудыг cache хийх
+2. **Middleware Caching** - queue-г cache хийх
 
 ---
 
-## PSR Стандартууд
+## PSR стандартууд
 
 ### Хийгдсэн
 
-1. **PSR-4 Autoloading**
-   - Composer autoload зөв тохируулагдсан
-   - Namespace structure стандартад нийцсэн
-
-2. **PSR-12 Coding Style**
-   - Код нь PSR-12 стандартад нийцсэн
-   - Indentation, brace position зөв
-
-3. **PSR-15 HTTP Server Request Handlers**
-   - RequestHandlerInterface бүрэн хэрэгжсэн
-   - MiddlewareInterface дэмжинэ
-
-4. **PSR-7 HTTP Message**
-   - Аливаа PSR-7 compliant implementation ашиглаж болно
-   - ServerRequestInterface, ResponseInterface интерфэйсүүд ашиглана
-   - codesaur/http-message нь зөвхөн жишээ болон fallback (NonBodyResponse)-д ашиглагддаг
-
-### Шалгах Зүйлс
-
-1. **PSR-1 Basic Coding Standard**
-   - Class name-ууд нь StudlyCaps
-   - Method name-ууд нь camelCase
-   - Constant-ууд нь UPPER_CASE
-
-2. **PSR-12 Extended Coding Style**
-   - Opening brace-ууд зөв байрлана
-   - Indentation зөв (4 spaces)
+1. **PSR-4 Autoloading** - Composer autoload зөв тохируулагдсан
+2. **PSR-12 Coding Style** - Indentation, brace position зөв
+3. **PSR-15 HTTP Server Request Handlers** - бүрэн
+4. **PSR-7 HTTP Message** - бүрэн дэмжинэ
 
 ---
 
 ## Дүгнэлт
 
-### Ерөнхий Үнэлгээ: 5/5
+### Ерөнхий үнэлгээ: 5/5
 
-`codesaur/http-application` нь маш сайн чанартай, PSR-7 & PSR-15 стандартад бүрэн нийцсэн HTTP Application цөм юм. Package нь:
+`codesaur/http-application` нь маш сайн чанартай, PSR-7 & PSR-15 стандартад бүрэн нийцсэн HTTP Application цөм.
 
 **Давуу талууд:**
 - PSR-15 бүрэн нийцтэй
-- Цэвэр архитектур
+- Цэвэр separation of concerns (magic API байхгүй)
+- Multi-router delegation
+- Mount feature (sub-application архитектур)
+- Per-route middleware (strict validation)
 - Бүрэн PHPDoc тайлбар
-- Уян хатан middleware систем
-- Router интеграци
-- Controller суурь класс
-- Exception handler
-- Бүрэн тест (64 тест)
+- 96 тест, бүх компонент coverage-тэй
 - CI/CD pipeline
-- Маш сайн документаци
-
-**Хэрэглэх зөвлөмж:**
-- REST API хөгжүүлэлт
-- Web application хөгжүүлэлт
-- Microservice хөгжүүлэлт
-- Middleware хөгжүүлэлт
-- MVC хэв маягийн application
+- Маш сайн документ
 
 **Production Ready:**
-- Package нь production орчинд ашиглахад бэлэн
-- Тестүүд байна (64 тест, 91 assertion)
-- CI/CD pipeline байна
-- Documentation бүрэн байна
+- Production орчинд бэлэн
+- Тестүүд бүрэн
+- CI/CD pipeline
+- Documentation бүрэн
 - Code quality маш сайн
 
 ---
 
-## Санал Зөвлөмж
+## Санал зөвлөмж
 
-### Богино хугацаанд:
+### Богино хугацаанд
 
-1. CHANGELOG.md нэмэх
-2. Custom exception классууд үүсгэх
-3. Response helper method-үүд нэмэх
+1. Custom exception классууд үүсгэх
+2. Response helper method-үүд нэмэх (JSON, redirect)
 
-### Дунд хугацаанд:
+### Дунд хугацаанд
 
-1. Route caching нэмэх
-2. Middleware priority system нэмэх
-3. Route-specific middleware нэмэх
+1. Route caching нэмэх (production)
+2. Middleware groups нэмэх
 
-### Урт хугацаанд:
+### Урт хугацаанд
 
-1. Middleware groups нэмэх
-2. Request/Response object pooling
-3. Performance optimization
-
----
-
-**Review хийсэн:** Cursor AI
-**Огноо:** 2025
-**Version:** 1.0.0
+1. Request/Response object pooling
+2. Performance optimization

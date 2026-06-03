@@ -10,10 +10,12 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 use codesaur\Http\Message\ServerRequest;
 use codesaur\Http\Message\Uri;
+use codesaur\Http\Message\NonBodyResponse;
 use codesaur\Http\Application\Application;
 use codesaur\Http\Application\Controller;
 use codesaur\Http\Application\ExceptionHandler;
 use codesaur\Http\Application\Tests\TestHelper;
+use codesaur\Router\Router;
 
 /**
  * Application Integration Test
@@ -27,10 +29,13 @@ use codesaur\Http\Application\Tests\TestHelper;
 class ApplicationIntegrationTest extends TestCase
 {
     private Application $app;
+    private Router $router;
 
     protected function setUp(): void
     {
-        $this->app = new Application();
+        $this->app = new Application(new NonBodyResponse());
+        $this->router = new Router();
+        $this->app->use($this->router);
     }
 
     public function testFullRequestResponseCycle(): void
@@ -51,7 +56,7 @@ class ApplicationIntegrationTest extends TestCase
         });
 
         // Route
-        $this->app->GET('/test', function ($req) use (&$executionLog) {
+        $this->router->GET('/test', function ($req) use (&$executionLog) {
             $executionLog[] = 'route-executed';
             echo 'Test Response';
         });
@@ -78,7 +83,7 @@ class ApplicationIntegrationTest extends TestCase
             }
         });
 
-        $this->app->GET('/user/{int:id}', [IntegrationTestController::class, 'show']);
+        $this->router->GET('/user/{int:id}', [IntegrationTestController::class, 'show']);
 
         $request = TestHelper::createServerRequest('GET', '/user/123');
 
@@ -91,7 +96,7 @@ class ApplicationIntegrationTest extends TestCase
     {
         $this->app->use(new ExceptionHandler());
 
-        $this->app->GET('/error', function ($req) {
+        $this->router->GET('/error', function ($req) {
             throw new \Error('Test Error', 500);
         });
 
@@ -141,7 +146,7 @@ class ApplicationIntegrationTest extends TestCase
             }
         });
 
-        $this->app->GET('/test', function ($req) use (&$order) {
+        $this->router->GET('/test', function ($req) use (&$order) {
             $order[] = 'route';
         });
 
@@ -155,7 +160,7 @@ class ApplicationIntegrationTest extends TestCase
     public function testRouteParametersInController(): void
     {
         // Router нь string type дэмжихгүй, type-гүй параметр ашиглах
-        $this->app->GET('/product/{int:id}/category/{name}', [IntegrationTestController::class, 'product']);
+        $this->router->GET('/product/{int:id}/category/{name}', [IntegrationTestController::class, 'product']);
 
         $request = TestHelper::createServerRequest('GET', '/product/42/category/electronics');
 
@@ -166,7 +171,7 @@ class ApplicationIntegrationTest extends TestCase
 
     public function testQueryParametersWithRoute(): void
     {
-        $this->app->GET('/search', [IntegrationTestController::class, 'search']);
+        $this->router->GET('/search', [IntegrationTestController::class, 'search']);
 
         $uri = TestHelper::createUri('/search');
         $uri->setQuery('q=test&page=1');
@@ -179,7 +184,7 @@ class ApplicationIntegrationTest extends TestCase
 
     public function testPostRequestWithBody(): void
     {
-        $this->app->POST('/api/users', [IntegrationTestController::class, 'create']);
+        $this->router->POST('/api/users', [IntegrationTestController::class, 'create']);
 
         $request = TestHelper::createServerRequest('POST', '/api/users');
         $request = $request->withParsedBody(['name' => 'John', 'email' => 'john@example.com']);

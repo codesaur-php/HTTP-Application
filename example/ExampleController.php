@@ -21,18 +21,50 @@ class ExampleController extends Controller
     /**
      * Index action - GET /
      *
-     * Энгийн index page харуулах.
-     * Энэ нь application амжилттай ажиллаж байгааг шалгах энгийн тест endpoint юм.
+     * "It works!" мессеж гаргаад доор нь бусад жишээ route-уудын clickable
+     * жагсаалтыг үзүүлнэ - developer шууд дарж туршиж болно.
      *
      * @return void
      *
      * @example
      * GET /
-     * Output: "It works! [codesaur\Http\Application\Example\ExampleController]"
+     * Output: "It works! [...]" + жишээ route-уудын линк жагсаалт
      */
     public function index(): void
     {
         echo '<br/>It works! [' . self::class . ']<br/><br/>';
+
+        // Subdirectory дээр ажиллахад линк зөв болгохын тулд script base path
+        // тооцоолно. Энэ нь Application::handle()-ийн зүсдэг dirname(SCRIPT_NAME)-ийн
+        // урвуу тул линкүүд routing-тай яг тааруулагдана.
+        $base = \dirname($this->getRequest()->getServerParams()['SCRIPT_NAME']);
+        if ($base === '/' || $base === '\\' || $base === '.') {
+            $base = '';
+        }
+
+        // GET-ээр шууд дарж туршиж болох route-ууд (жишээ утга суулгасан)
+        $clickable = [
+            '/home'           => 'home - Closure route',
+            '/hello/World'    => 'hi - GET /hello/{firstname}',
+            '/hello/John/Doe' => 'hello - GET /hello/{firstname}/{lastname}',
+            '/echo/codesaur'  => 'echo - GET|POST|PUT|DELETE|OPTIONS route',
+            '/float/3.14'     => 'float - {float:number} типтэй параметр',
+            '/sum/2/3'        => 'sum - {int:a}/{uint:b} типтэй параметр',
+            '/guarded'        => 'guarded - per-route middleware-тэй',
+        ];
+
+        echo '<strong>Бусад жишээ route (дарж туршина уу):</strong><ul>';
+        foreach ($clickable as $path => $label) {
+            $href = $base . $path;
+            echo '<li><a href="' . $href . '">' . $href . '</a> - ' . $label . '</li>';
+        }
+        echo '</ul>';
+
+        // POST/PUT-ээр л дуудагддаг тул энгийн линкээр дарж болохгүй (body шаардана)
+        echo '<strong>POST/PUT (линкээр биш, request body шаардана):</strong><ul>';
+        echo '<li>POST|PUT <code>' . $base . '/post-or-put</code> - body: firstname, lastname</li>';
+        echo '<li>POST <code>' . $base . '/hello/post</code> - body: firstname, lastname</li>';
+        echo '</ul>';
     }
 
     /**

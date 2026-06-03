@@ -93,7 +93,7 @@ abstract class Controller
     /**
      * Бүх request attributes-г авах.
      *
-     * Attributes нь route parameters, router instance,
+     * Attributes нь route parameters, Application instance,
      * middleware-ээс нэмсэн custom attributes зэрэг байж болно.
      *
      * @return array<string, mixed> Бүх attributes-ийн массив
@@ -101,7 +101,7 @@ abstract class Controller
      * @example
      * $attrs = $this->getAttributes();
      * $params = $attrs['params'] ?? [];
-     * $router = $attrs['router'] ?? null;
+     * $application = $attrs['application'] ?? null;
      */
     public final function getAttributes(): array
     {
@@ -111,7 +111,7 @@ abstract class Controller
     /**
      * Нэг attribute-г авах.
      *
-     * Request attributes нь route parameters, router instance,
+     * Request attributes нь route parameters, Application instance,
      * middleware-ээс нэмсэн custom attributes зэрэг байж болно.
      *
      * @param string $name Attribute-ийн нэр
@@ -123,8 +123,8 @@ abstract class Controller
      * $params = $this->getAttribute('params');
      * $userId = $params['id'] ?? null;
      *
-     * // Router instance авах
-     * $router = $this->getAttribute('router');
+     * // Application instance авах
+     * $application = $this->getAttribute('application');
      *
      * // Middleware-ээс нэмсэн custom attribute
      * $startTime = $this->getAttribute('start_time', 0);

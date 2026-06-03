@@ -7,8 +7,9 @@
 `codesaur/http-application` нь PSR-7 (HTTP Message) ба PSR-15 (HTTP Server RequestHandler/Middleware) стандартууд дээр суурилсан **минималист**, **өндөр уян хатан**, **middleware суурьтай** Application цөм юм.
 
 Та хүсвэл:
-- Router нэмэх
-- Middleware удирдах
+- Олон Router-ийг нэг Application-д нэгтгэх
+- Application-ийг URL prefix-д mount хийх
+- Middleware удирдах (global + per-route)
 - Controller/action ашиглах
 - Closure route ашиглах
 - Exception handler бүртгэх
@@ -24,21 +25,25 @@
 Request болон Response объектууд бүгд **immutable**, бүрэн стандартын дагуу.
 
 ### PSR-15 Middleware & RequestHandler гинжин бүтэц
-Middleware-үүд өөр хоорондоо сонгино шиг (before -> action -> after) ажиллана.
+Middleware-үүд onion model-оор (before -> action -> after) ажиллана. Global болон per-route аль алинд адил механизм.
 
-### Уян хатан Router интеграци
-Багц нь **codesaur/router**-ийг шууд дэмждэг.
+### Multi-router delegation
+Олон Router instance-ийг нэг Application-д нэгтгэж болно. use() дарааллаар match хайгдана (first-added-wins) - предиктабл бөгөөд best practice-ийг дагасан. Өмнө бүртгэсэн route-ийг шинэ router дээр зориудаар дарж бичихийг хүсвэл explicit `override()` lane ашиглана (доор үз).
 
-Dynamic, typed, multi-method маршрутуудыг амархан зарлана.
+### Mount feature
+Application-ийг URL prefix-д суулгаж Router-ууд prefix-ийг мэдэхгүй (reusable) болгох.
 
 ### Controller суурь класс
-PHP MVC хэв маягтай хөгжүүлэхэд тохиромжтой.
+Controller/action хэв маягаар route бичихэд тохиромжтой (сонголтот - Closure route-оор controller-гүй ч ажиллана).
+
+### Per-route middleware
+Тухайн route-д л ажиллах middleware-уудыг Router::middleware()-ээр оноох. MiddlewareInterface, Closure, class-string бүгд дэмжигдэнэ.
 
 ### Exception Handler
 Алдааны боловсруулалт. Development mode дээр trace харуулдаг. Хөгжүүлэгч өөрийн хүссэнээр сайжруулж болно.
 
-### Хэт хөнгөн, хурдан
-Ямар ч framework-ийн суурь болгон ашиглах боломжтой.
+### Цэвэр separation of concerns
+Magic API байхгүй - route бүртгэлт Router-ийн л хариуцлага. Application нь зөвхөн coordinator.
 
 ---
 
@@ -55,53 +60,157 @@ composer require codesaur/http-application
 ```
 Application
  +-- Middleware stack (PSR-15 + Closure)
- +-- Router (codesaur/router)
+ +-- Router collection (list of RouterInterface)
+ |    +-- Router #1
+ |    +-- Router #2
+ |    +-- ...
+ +-- Mount path (optional URL prefix)
  +-- ExceptionHandler
  +-- Controller / Closure route executor
 ```
 
-Application -> Middleware-үүд -> Match route -> Controller/action/Closure -> Response
+**Request flow:**
+```
+Request
+  -> Global middleware chain (PSR-15 onion model)
+  -> Application::match() [mount prefix strip]
+  -> Override lane, дараа нь эхэлж таарсан Router ялна (first-added-wins)
+  -> Per-route middleware chain
+  -> Controller/action эсвэл Closure
+  -> Response
+```
 
 ---
 
 # Хэрэглээний жишээ
 
-## Application boot script (index.php)
+## 1. Энгийн setup (нэг Router)
 
 ```php
-$application = new class extends Application {
-    public function __construct() {
-        parent::__construct();
+use codesaur\Router\Router;
+use codesaur\Http\Application\Application;
+use codesaur\Http\Application\ExceptionHandler;
+use codesaur\Http\Message\ServerRequest;
+use codesaur\Http\Message\NonBodyResponse;
+
+// Route-уудаа Router дээр бүртгэнэ
+$router = new Router();
+$router->GET('/', function ($req) {
+    echo 'Hello World!';
+});
+
+// Application үүсгээд router, middleware нэмнэ
+$app = new Application(new NonBodyResponse());
+$app->use(new ExceptionHandler());
+$app->use($router);
+
+// Request handle хийнэ
+$app->handle((new ServerRequest())->initFromGlobal());
+```
+
+## 2. Application-ийг extend хийх pattern
+
+```php
+use Psr\Http\Message\ResponseInterface;
+
+class WebApplication extends Application
+{
+    public function __construct(ResponseInterface $response)
+    {
+        parent::__construct($response);   // fallback хариуны prototype-ийг parent руу дамжуулна
 
         $this->use(new ExceptionHandler());
-        $this->use(new BeforeMiddleware());
-        $this->use(new AfterMiddleware());
-        $this->use(new OnionMiddleware());
-        $this->use(new ExampleRouter());
+        $this->use(new SessionMiddleware());
 
-        $this->GET('/', [ExampleController::class, 'index']);
+        // Модулийн router-уудыг нэмэх
+        $this->use(new HomeRouter());
+        $this->use(new ShopRouter());
+        $this->use(new BlogRouter());
     }
-};
+}
 
-$application->handle((new ServerRequest())->initFromGlobal());
+$app = new WebApplication(new NonBodyResponse());
+$app->handle((new ServerRequest())->initFromGlobal());
+```
+
+## 3. Mount feature - Application-ийг URL prefix-д суулгах
+
+```php
+// Router-ууд prefix-ийг МЭДЭХГҮЙ - reusable
+$adminRouter = new Router();
+$adminRouter->GET('/users', [UserAdmin::class, 'list'])->name('users');
+$adminRouter->GET('/posts', [PostAdmin::class, 'list'])->name('posts');
+
+// Application-ийг entry point дээр mount хийнэ
+$app = new Application(new NonBodyResponse());
+$app->use($adminRouter);
+$app->mount('/dashboard');
+
+// /dashboard/users -> Router-д /users-аар тааран ажиллана
+// generate('users') -> '/dashboard/users'
+// $app->mount('/admin') гэвэл нэг ч route өөрчилөхгүйгээр /admin-руу шилжинэ
+```
+
+Mount хийсний дараа Controller-ээс `$req->getAttribute('application')->generate('name')` дуудахад mount prefix автоматаар нэмэгдэнэ.
+
+## 4. Multi-router - олон Router нэгтгэх
+
+```php
+$apiRouter = new Router();
+$apiRouter->GET('/api/users', [UserApi::class, 'list'])->name('api.users');
+
+$adminRouter = new Router();
+$adminRouter->GET('/admin/dashboard', [Admin::class, 'index'])->name('admin.dash');
+
+$homeRouter = new Router();
+$homeRouter->GET('/', $homeHandler);
+
+$app = new Application(new NonBodyResponse());
+$app->use($apiRouter);
+$app->use($adminRouter);
+$app->use($homeRouter);
+
+// Match order: use() дараалал (first-added-wins) - предиктабл default
+// generate()/pattern() бүх router дээр first-found-wins хайна
+$url = $app->generate('api.users');     // '/api/users'
+```
+
+### Route override
+
+Өмнө бүртгэсэн route-ийг шинэ router дээр зориудаар дарж бичихдээ explicit `override()` lane ашиглана. Override router-ууд ердийн `use()` router-ээс **өмнө** шалгагдах тул тэдгээрийн route ялна - бүртгэх дараалал хамаагүй. Энэ нь default-ийг предиктабл байлгаж (санамсаргүй shadowing-гүй), override-ийг ил, bootstrap дотор тодорхой болгоно - explicit override best practice-ийг дагасан.
+
+**Хэзээ ашиглах вэ:** override нь зөвхөн дарж бичих гэж буй route чинь vendor багц (composer dependency) дотор зарлагдсан үед л утга учиртай. Vendor доторх route-ийн кодыг developer шууд засах боломжгүй (зассан ч `composer update` дээр дарагдана) тул өөрийн Router-аар override lane-д дарж бичнэ. Харин дарж бичих гэж буй route чинь өөрийн project дотор зарлагдсан бол түүнийг шууд эх кодон дээр нь засаж болно - тийм тохиолдолд override ашиглаж шинэ Router зарлах нь ямар ч шаардлагагүй overkill.
+
+```php
+$app->use(new ProfileRouter());         // vendor багцаас ирсэн /profile - кодыг нь засах боломжгүй
+
+$themeProfile = new Router();
+$themeProfile->GET('/profile', [ThemeProfileController::class, 'show'])->name('profile');
+$app->override($themeProfile);          // ИЛ override - энэ ялна
 ```
 
 ---
 
-# Router жишээ
+# Router-ийн route төрлүүд
 
 ```php
-$this->GET('/hello/{firstname}', [ExampleController::class, 'hello'])->name('hi');
+$router = new Router();
 
-$this->POST_PUT('/post-or-put', [ExampleController::class, 'post_put']);
+// Named route + typed parameter
+$router->GET('/user/{int:id}', [UserController::class, 'show'])->name('user.show');
 
-$this->GET('/float/{float:number}', [ExampleController::class, 'float']);
+// Multi-method
+$router->POST_PUT('/api/users', [UserController::class, 'save']);
 
-$this->GET('/sum/{int:a}/{uint:b}', function ($req) {
-    $a = $req->getAttribute('params')['a'];
-    $b = $req->getAttribute('params')['b'];
-    echo "$a + $b = " . ($a + $b);
+// Multiple types (int, uint, float)
+$router->GET('/sum/{int:a}/{uint:b}', function ($req) {
+    $params = $req->getAttribute('params');
+    echo $params['a'] + $params['b'];
 });
+
+// Per-route middleware
+$router->POST('/admin/delete', [AdminController::class, 'delete'])
+    ->middleware([AuthMiddleware::class, CsrfMiddleware::class]);
 ```
 
 ---
@@ -109,41 +218,88 @@ $this->GET('/sum/{int:a}/{uint:b}', function ($req) {
 # Controller жишээ
 
 ```php
-class ExampleController extends Controller
+use codesaur\Http\Application\Controller;
+
+class UserController extends Controller
 {
-    public function hello(string $firstname)
+    public function show(int $id): void
     {
-        $user = $firstname;
+        $query = $this->getQueryParams();
+        $page = $query['page'] ?? 1;
 
-        $params = $this->getQueryParams();
-        if (!empty($params['lastname'])) {
-            $user .= " {$params['lastname']}";
-        }
+        echo "User ID: $id, Page: $page";
+    }
 
-        echo "Hello $user!";
+    public function create(): void
+    {
+        $data = $this->getParsedBody();
+        $name = $data['name'] ?? 'Unknown';
+
+        echo "Created user: $name";
     }
 }
 ```
 
+Controller-аас `$this->getAttribute('application')` нь Application instance-руу заана. Тиймээс `$this->getAttribute('application')->generate('user.show', ['id' => 5])` нь mount prefix-тэй URL автоматаар буцаана.
+
 ---
 
-# Middleware жишээ (Onion модель)
-
-### BeforeMiddleware -> request шинээр attribute нэмэх
-### AfterMiddleware -> request-ийн хугацааг хэвлэх
-### OnionMiddleware -> before/after лог хэвлэх
+# Middleware жишээ (Onion model)
 
 ```php
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
 class OnionMiddleware implements MiddlewareInterface
 {
-    public function process($req, $handler): ResponseInterface
+    public function process(ServerRequestInterface $req, RequestHandlerInterface $handler): ResponseInterface
     {
-        var_dump("i'm onion before");
+        // before
         $res = $handler->handle($req);
-        var_dump("i'm onion after");
+        // after
         return $res;
     }
 }
+
+// Global middleware
+$app->use(new OnionMiddleware());
+
+// Closure middleware
+$app->use(function ($req, $handler) {
+    $start = microtime(true);
+    $res = $handler->handle($req);
+    error_log("Took: " . (microtime(true) - $start) . "s");
+    return $res;
+});
+```
+
+---
+
+# Per-route middleware
+
+Route-д тусгай middleware оноох (зөвхөн тэр route-д ажиллана):
+
+```php
+$router = new Router();
+
+// MiddlewareInterface instance
+$router->GET('/admin', [AdminCtrl::class, 'index'])
+    ->middleware([new AuthMiddleware()]);
+
+// class-string (lazy instantiate)
+$router->POST('/admin/save', [AdminCtrl::class, 'save'])
+    ->middleware([AuthMiddleware::class, CsrfMiddleware::class]);
+
+// Closure
+$router->DELETE('/admin/{int:id}', [AdminCtrl::class, 'delete'])
+    ->middleware([
+        function ($req, $handler) {
+            // shouldn-key middleware зөвхөн энэ route-д
+            return $handler->handle($req);
+        },
+    ]);
 ```
 
 ---
@@ -151,7 +307,7 @@ class OnionMiddleware implements MiddlewareInterface
 # Алдааны боловсруулалт (ExceptionHandler)
 
 ```php
-$this->use(new ExceptionHandler());
+$app->use(new ExceptionHandler());
 ```
 
 - Алдааны код байвал HTTP статус автоматаар тохируулна
@@ -163,22 +319,13 @@ $this->use(new ExceptionHandler());
 define('CODESAUR_DEVELOPMENT', true); // Development mode идэвхжүүлэх
 ```
 
----
-
-# Request боловсруулах дараалал
-
-1. Middleware stack эхнээс нь дуудна
-2. Router -> Match -> Callback/Controller action
-3. Middleware stack буцаад дуусгана
-4. Response-г хэрэглэгч рүү дамжуулна
-
----
-
-# Custom ExceptionHandler ашиглах
+## Custom ExceptionHandler
 
 ```php
+use codesaur\Http\Application\ExceptionHandlerInterface;
+
 class MyHandler implements ExceptionHandlerInterface {
-    public function exception(Throwable $e) {
+    public function exception(\Throwable $e) {
         http_response_code(500);
         echo "Custom error: " . $e->getMessage();
     }
@@ -192,8 +339,7 @@ $app->use(new MyHandler());
 # Хөгжүүлэлтийн зөвлөмж
 
 - PHP 8.2.1+ орчин
-- Apache + .htaccess rewrite тохиргоотой (optional)
-- Төсөлдөө MVC хэв маяг авахад маш тохиромжтой
+- Route бүртгэх нь Router-ийн хариуцлага - Application бол coordinator л
 
 ---
 
@@ -202,50 +348,48 @@ $app->use(new MyHandler());
 ### Composer Test Command-ууд
 
 ```bash
-# Бүх тест ажиллуулах (Unit + Integration тестүүд)
+# Бүх тест ажиллуулах (Unit + Integration)
 composer test
 
-# Зөвхөн Unit тестүүд ажиллуулах
+# Зөвхөн Unit тест
 composer test:unit
 
-# Зөвхөн Integration тестүүд ажиллуулах
+# Зөвхөн Integration тест
 composer test:integration
 
-# HTML coverage report үүсгэх (coverage/html directory дотор)
+# HTML coverage report
 composer test:coverage
 
-# Clover XML coverage report үүсгэх (CI/CD-д ашиглах)
+# Clover XML coverage report (CI/CD-д)
 composer test:coverage-clover
 ```
 
 ### Тестүүдийн мэдээлэл
 
 - **Unit Tests**: Application, Controller, ExceptionHandler классуудын тест
-- **Integration Tests**: Бүх компонентуудыг хамтдаа ашиглах integration тестүүд
-- **Edge Case Tests**: Хязгаарийн тохиолдлуудын тест
-- **Performance Tests**: Гүйцэтгэлийн тестүүд
+- **Integration Tests**: Бүх компонентуудыг хамтдаа ашиглах integration тест
+- **Edge Case Tests**: Хязгаарын тохиолдлын тест (mount, multi-router, middleware validation)
+- **Performance Tests**: Гүйцэтгэлийн тест
 
 ### PHPUnit шууд ашиглах
 
-Composer command-уудын оронд PHPUnit-ийг шууд ажиллуулж болно:
-
 ```bash
-# Бүх тест ажиллуулах
+# Бүх тест
 vendor/bin/phpunit
 
-# Зөвхөн Unit тестүүд
+# Зөвхөн Unit
 vendor/bin/phpunit --testsuite "HTTP Application Test Suite"
 
-# Зөвхөн Integration тестүүд
+# Зөвхөн Integration
 vendor/bin/phpunit --testsuite "Integration Tests"
 
-# Coverage report (Clover XML формат)
+# Coverage report (Clover XML)
 vendor/bin/phpunit --coverage-clover coverage.xml
 
-# Coverage report (HTML формат)
+# HTML coverage
 vendor/bin/phpunit --coverage-html coverage/html
 
-# Тодорхой тест файл ажиллуулах
+# Тодорхой файл
 vendor/bin/phpunit tests/ApplicationTest.php
 ```
 
@@ -267,16 +411,16 @@ vendor/bin/phpunit tests/ApplicationTest.php
 
 ---
 
-# Нэмэлт Документаци
+# Нэмэлт документ
 
-- [API](api.md) - Бүрэн API удирдлага, бүх класс болон method-үүдийн дэлгэрэнгүй тайлбар (PHPDoc комментоос Cursor AI үүсгэв)
-- [REVIEW](review.md) - Код шалгалтын тайлан, код чанар, архитектур, PSR стандартууд (Cursor AI шинжилсэн)
+- [API](api.md) - Бүх класс болон method-ийн дэлгэрэнгүй
+- [REVIEW](review.md) - Код шалгалтын тайлан
 
 ---
 
 # Зохиогч
 
-Narankhuu  
+Narankhuu
 https://github.com/codesaur
 
 ---
@@ -284,10 +428,10 @@ https://github.com/codesaur
 # Дүгнэлт
 
 `codesaur/http-application` бол:
-- Хөнгөн
-- Уян хатан
-- Стандарт мөрдсөн
-- Энгийн
+- Хөнгөн (магик код байхгүй)
+- Уян хатан (multi-router, mount, per-route middleware)
+- Стандарт мөрдсөн (PSR-7, PSR-15)
+- Энгийн (цэвэр separation of concerns)
 - Хурдан
 
-PHP дээр PSR стандарт нийцсэн өөрийн аппликейшн бүтэцтэй болохыг хүсвэл хамгийн тохиромжтой сонголт юм!
+PHP дээр PSR стандарт нийцсэн өөрийн аппликейшн бүтэцтэй болохыг хүсвэл тохиромжтой сонголт.

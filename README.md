@@ -20,7 +20,7 @@
 `codesaur/http-application` нь PSR-7 (HTTP Message) ба PSR-15 (HTTP Server RequestHandler/Middleware) стандартууд дээр суурилсан **минималист**, **өндөр уян хатан**, **middleware суурьтай** Application цөм юм.
 
 Та хүсвэл:
-- Router нэмэх
+- Router ашиглах (нэг эсвэл олон)
 - Middleware удирдах
 - Controller/action ашиглах
 - Closure route ашиглах
@@ -33,10 +33,12 @@
 
 - PSR-7 стандартын ServerRequest + Response
 - PSR-15 Middleware & RequestHandler гинжин бүтэц
-- Уян хатан Router интеграци (codesaur/router)
-- Controller суурь класс (MVC хэв маяг дэмжлэг)
+- Олон Router-ийг нэг Application-д нэгтгэх (multi-router delegation)
+- Application-ийг URL prefix-д mount хийх (Router-ууд reusable)
+- Controller суурь класс (сонголтот - controller/action хэв маягт ашиглаж болно)
+- Per-route middleware (MiddlewareInterface, Closure, class-string)
 - Exception Handler (development mode-той)
-- Хэт хөнгөн, хурдан
+- Хэт хөнгөн, хурдан - magic API байхгүй, цэвэр separation of concerns
 
 ### Дэлгэрэнгүй мэдээлэл
 
@@ -51,7 +53,7 @@
 `codesaur/http-application` is a **minimalist**, **highly flexible**, **middleware-based** Application core built on PSR-7 (HTTP Message) and PSR-15 (HTTP Server RequestHandler/Middleware) standards.
 
 You can:
-- Add Router
+- Use Router (one or many)
 - Manage Middleware
 - Use Controller/action
 - Use Closure routes
@@ -64,10 +66,12 @@ and build your desired web application structure with just a few lines of code.
 
 - PSR-7 Standard ServerRequest + Response
 - PSR-15 Middleware & RequestHandler Chain Structure
-- Flexible Router Integration (codesaur/router)
-- Controller Base Class (MVC pattern support)
+- Multi-router delegation (combine multiple Routers in one Application)
+- Mount Application at a URL prefix (Routers are reusable)
+- Controller base class (optional - for controller/action style code if you want)
+- Per-route middleware (MiddlewareInterface, Closure, class-string)
 - Exception Handler (with development mode)
-- Extremely Lightweight and Fast
+- Extremely lightweight and fast - no magic API, clean separation of concerns
 
 ### Documentation
 
@@ -83,7 +87,9 @@ and build your desired web application structure with just a few lines of code.
 
 - PHP **8.2.1+**
 - Composer
-- PSR-7 compatible HTTP Message implementation (e.g., `codesaur/http-message`)
+- PSR-7 compatible HTTP Message implementation (e.g., `codesaur/http-message`) -
+  supplies the `ServerRequestInterface` passed to `handle()` and the
+  `ResponseInterface` prototype passed to the `Application` constructor
 
 ### Installation
 
@@ -98,20 +104,22 @@ composer require codesaur/http-application
 #### Application - Basic Setup
 
 ```php
+use codesaur\Router\Router;
 use codesaur\Http\Application\Application;
 use codesaur\Http\Application\ExceptionHandler;
 use codesaur\Http\Message\ServerRequest;
+use codesaur\Http\Message\NonBodyResponse;
 
-// Application instance үүсгэх / Create Application instance
-$app = new Application();
-
-// Exception handler бүртгэх / Register exception handler
-$app->use(new ExceptionHandler());
-
-// Route бүртгэх / Register route
-$app->GET('/', function ($req) {
+// Router-д route бүртгэх / Register routes on Router
+$router = new Router();
+$router->GET('/', function ($req) {
     echo 'Hello World!';
 });
+
+// Application үүсгэх (fallback хариуны prototype дамжуулна) + middleware + router нэмэх
+$app = new Application(new NonBodyResponse());
+$app->use(new ExceptionHandler());
+$app->use($router);
 
 // Хүсэлт боловсруулах / Handle request
 $request = (new ServerRequest())->initFromGlobal();
@@ -121,20 +129,89 @@ $response = $app->handle($request);
 #### Router - Dynamic Routes
 
 ```php
-// Төрөлтэй параметртэй нэртэй route / Named route with typed parameters
-$app->GET('/user/{int:id}', [UserController::class, 'show'])->name('user.show');
+$router = new Router();
 
-// Олон method-тэй route / Multi-method route
-$app->POST_PUT('/api/users', [UserController::class, 'save']);
+// Төрөлтэй параметртэй нэртэй route
+$router->GET('/user/{int:id}', [UserController::class, 'show'])->name('user.show');
 
-// Параметртэй Closure route / Closure route with parameters
-$app->GET('/sum/{int:a}/{uint:b}', function ($req) {
+// Олон method-тэй route
+$router->POST_PUT('/api/users', [UserController::class, 'save']);
+
+// Параметртэй Closure route
+$router->GET('/sum/{int:a}/{uint:b}', function ($req) {
     $params = $req->getAttribute('params');
     echo $params['a'] + $params['b'];
 });
+
+$app = new Application(new NonBodyResponse());
+$app->use($router);
 ```
 
-#### Controller - MVC Pattern
+#### Mount - Application-ийг URL prefix-д суулгах / Mounting Application at a URL Prefix
+
+```php
+use codesaur\Router\Router;
+
+// Router-ууд prefix-ийг мэдэхгүй - reusable
+$adminRouter = new Router();
+$adminRouter->GET('/users', [UserAdmin::class, 'list'])->name('users');
+$adminRouter->GET('/posts', [PostAdmin::class, 'list'])->name('posts');
+
+// Application-ийг entry point дээр mount хийнэ
+$app = new Application(new NonBodyResponse());
+$app->use($adminRouter);
+$app->mount('/dashboard');  // бүх route /dashboard prefix-тэй болов
+
+// match: /dashboard/users -> Router-д /users-аар тааран ажиллана
+// generate('users') -> '/dashboard/users'
+// $app->mount('/admin') гэвэл нэг ч route өөрчлөхгүйгээр /admin-руу шилжинэ
+```
+
+Mount хийсний дараа `$req->getAttribute('application')->generate('name')` нь Application-руу заана учир Controller-ээс URL үүсгэхэд mount prefix автоматаар нэмэгдэнэ.
+
+#### Multi-Router - Олон Router нэгтгэх / Combining Multiple Routers
+
+```php
+use codesaur\Router\Router;
+
+// Module бүрд өөрийн router-тэй
+$apiRouter = new Router();
+$apiRouter->GET('/api/users', [UserApi::class, 'list'])->name('api.users');
+
+$adminRouter = new Router();
+$adminRouter->GET('/admin/dashboard', [Admin::class, 'index'])->name('admin.dash');
+
+$homeRouter = new Router();
+$homeRouter->GET('/', $homeHandler);
+
+// Application-д бүгдийг нэгтгэх
+$app = new Application(new NonBodyResponse());
+$app->use($apiRouter);
+$app->use($adminRouter);
+$app->use($homeRouter);
+
+// Match order: use() дарааллаар (first-added-wins) - предиктабл default
+// generate()/pattern() бүх router дээр first-found-wins хайна
+$url = $app->generate('api.users');     // '/api/users'
+```
+
+#### Route override - өмнө бүртгэсэн route-ийг зориудаар дарж бичих
+
+```php
+// Router бүртгэх
+$app->use(new ProfileRouter());         // /profile -> ProfileController
+
+// Developer-ийн theme controller-руу шилжүүлэх override
+$themeProfile = new Router();
+$themeProfile->GET('/profile', [ThemeProfileController::class, 'show'])->name('profile');
+
+$app->override($themeProfile);          // ил override - энэ ялна
+
+// Override lane нь ердийн router-ээс өмнө шалгагдана. Зүгээр use()-ийн
+// дараалалд найдаж далд override хийхгүй - bootstrap дотор ил харагдана.
+```
+
+#### Controller - controller/action route
 
 ```php
 use codesaur\Http\Application\Controller;
@@ -214,12 +291,30 @@ composer test:coverage
 ```
 Application
  +-- Middleware stack (PSR-15 + Closure)
- +-- Router (codesaur/router)
+ +-- Override lane (list of RouterInterface)     <- checked first, explicit override()
+ |    +-- Override Router #1
+ |    +-- ...
+ +-- Router collection (list of RouterInterface) <- normal use(), first-added-wins
+ |    +-- Router #1
+ |    +-- Router #2
+ |    +-- ...
+ +-- Mount path (optional URL prefix)
  +-- ExceptionHandler
  +-- Controller / Closure route executor
 ```
 
-**Request Flow:** Application -> Middleware -> Match route -> Controller/action/Closure -> Response
+**Request Flow:**
+```
+Request
+  -> Global middleware chain (PSR-15 onion model)
+  -> Application::match() [strips mount prefix]
+  -> Override lane, then first Router that matches wins (first-added-wins)
+  -> Per-route middleware chain (PSR-15 onion model)
+  -> Controller/action OR Closure
+  -> Response
+```
+
+**URL Generation:** `Application::generate('name')` -> finds name in first Router that has it -> prepends mount prefix -> returns URL.
 
 ---
 

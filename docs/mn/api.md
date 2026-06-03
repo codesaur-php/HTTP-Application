@@ -22,65 +22,79 @@ PSR-15 стандартын RequestHandlerInterface-г хэрэгжүүлсэн 
 
 ### Тайлбар
 
-Энэ класс нь HTTP хүсэлтүүдийг дараалсан middleware-ээр дамжуулж, маршрутын callback эсвэл Controller->action-г ажиллуулж PSR-7 Response буцаах үндсэн цөм модуль юм.
+Энэ класс нь HTTP хүсэлтүүдийг дараалсан middleware-ээр дамжуулж, олон Router-ийн дунд таарах route хайж, Controller/action эсвэл Closure-ийг ажиллуулж PSR-7 Response буцаах үндсэн цөм модуль юм.
 
 **Үндсэн үүргүүд:**
-- Router үүсгэх, маршрут бүртгэх
-- Middleware стек удирдах (PSR-15 Middleware болон Closure)
-- Хүсэлтийг маршрутад тохируулах (Router::match)
+- Олон Router-ийг агуулах ба нэгтгэн ажиллуулах (multi-router delegation)
+- Application-ийг URL prefix-д mount хийх
+- Global middleware стек удирдах (PSR-15 Middleware болон Closure)
+- Хүсэлтийг бүх router-ээр дамжуулж first-added-wins зарчмаар тааруулах
+- Өмнө бүртгэсэн route-ийг зориудаар дарж бичих explicit override lane (`override()`)
+- Per-route middleware ажиллуулах (Router::middleware([...]))
 - Controller/action эсвэл Closure route ажиллуулах
-- Response багцын NonBodyResponse-г хэрэглэж fallback хариу буцаах
+- Handler ResponseInterface буцаахгүй бол constructor-оор өгсөн хариуны prototype-оос clone хийж fallback болгох
 
 ### Properties
 
-#### `protected RouterInterface $router`
+#### `private array $routers`
 
-Application дотор ашиглагдах үндсэн Router instance.
+use()-ээр бүртгэлтэй ердийн Router instance-уудын жагсаалт. Зөвхөн use() дотроос л set хийгддэг тул private.
 
-Энэ нь бүх route pattern, method mapping, параметр тайлбарлалтыг гүйцэтгэнэ. Router-ийн бүх public method-үүдийг Application-оор шууд дуудах боломжтой.
+use(RouterInterface)-ээр нэмэгдсэн дарааллаар хадгалагдана. Эрэмбэ - match/generate/pattern гэх мэт lookup-д first-added-wins: эхэлж нэмэгдсэн router ялна - предиктабл, санамсаргүй shadowing-гүй. Route-ийг зориудаар дарж бичихийг хүсвэл `$overrides` lane ашиглана.
 
-#### `private array $_middlewares`
+#### `private array $overrides`
 
-Middleware жагсаалт (queue).
+Override lane - өмнө бүртгэсэн route-ийг зориудаар дарж бичих, override()-ээр бүртгэлтэй Router-уудын жагсаалт. Зөвхөн override() дотроос л set хийгддэг тул private.
 
-Дараах төрлүүдийг хүлээн авна:
+match/generate/pattern/getRoutes бүгдэд `$routers`-ээс **өмнө** шалгагдах тул эдгээрийн route нь бүртгэх дарааллаас үл хамааран ялна. Override-ийг далд (registration order-ийн санамсаргүй гаж нөлөө) бус ил, зориудын үйлдэл болгоно - explicit override best practice. Lane дотроо first-added-wins.
+
+#### `private string $mountPath`
+
+Application-ийн mount path (URL prefix).
+
+Хоосон бол ('') Application нь root-д сууж байна. Утгатай үед (жишээ: '/dashboard') Application нь тухайн path-д mount хийгдсэн.
+
+#### `private ResponseInterface $responsePrototype`
+
+Fallback хариуны prototype. Controller/action эсвэл Closure нь ResponseInterface биш төрөл буцаавал `handle()` энэ prototype-оос clone хийж хүчинтэй хариу үүсгэнэ. Constructor-оор дамждаг тул энэ багц аль нэг тодорхой PSR-7 implementation-д тулгуурлахгүй.
+
+#### `private array $middlewares`
+
+Global middleware жагсаалт. Дараах төрлүүдийг хүлээн авна:
 - PSR-15 MiddlewareInterface
 - Closure middleware ($request, $handler)
-- RouterInterface (merge хийнэ)
-- ExceptionHandlerInterface (глобал exception handler болгоно)
 
 ### Methods
 
-#### `public function __construct()`
+#### `public function __construct(ResponseInterface $responsePrototype)`
 
-Application конструктор.
+Application үүсгэх.
 
-Application үүсэх үед шинэ Router instance автоматаар үүснэ. Энэ Router-г ашиглан маршрутуудыг бүртгэж болно.
-
-**Жишээ:**
-```php
-$app = new Application();
-```
-
----
-
-#### `public function __call(string $name, array $arguments): mixed`
-
-Router-ийн аливаа public method-ийг Application-оор шууд дуудах боломж олгоно.
-
-Энэ нь magic method бөгөөд Router классын бүх public method-үүдийг Application instance-оор шууд дуудах боломжийг олгодог.
+Constructor нь нэг PSR-7 `ResponseInterface`-ийг fallback хариуны prototype болгон авна: handler ResponseInterface биш төрөл буцаавал `handle()` нь `clone $responsePrototype` буцаана. Концрет implementation-ийг гаднаас inject хийдэг тул энэ багц зөвхөн PSR-7 interface-д тулгуурлана, тодорхой PSR-7 багцад биш.
 
 **Parameters:**
-- `string $name` - Дуудах функцийн нэр (жишээ: GET, POST, PUT, DELETE гэх мэт)
-- `array<int, mixed> $arguments` - Аргументууд
-
-**Returns:** `mixed` - Router method-ийн буцаах утга
+- `ResponseInterface $responsePrototype` - fallback зам дээр clone хийгдэх хариуны prototype
 
 **Жишээ:**
 ```php
-$app->GET('/home', fn($req) => echo 'Home');
-$app->POST('/api/users', [UserController::class, 'create']);
-$app->GET('/user/{int:id}', [UserController::class, 'show'])->name('user.show');
+use codesaur\Http\Application\Application;
+use codesaur\Http\Message\NonBodyResponse;
+
+$app = new Application(new NonBodyResponse());
+```
+
+Subclass хийхдээ prototype-ийг parent constructor руу дамжуулна:
+```php
+use Psr\Http\Message\ResponseInterface;
+
+class WebApplication extends Application
+{
+    public function __construct(ResponseInterface $response)
+    {
+        parent::__construct($response);
+        // middleware болон router-уудаа бүртгэнэ...
+    }
+}
 ```
 
 ---
@@ -92,7 +106,7 @@ Middleware, Router эсвэл ExceptionHandler бүртгэх.
 Энэ метод нь дараах төрлийн объектуудыг хүлээн авна:
 - **MiddlewareInterface**: PSR-15 стандартын middleware
 - **Closure**: Closure middleware function
-- **RouterInterface**: Өөр router-ийн маршрутуудыг нэгтгэх
+- **RouterInterface**: Router-ийг multi-router delegation-д нэмэх
 - **ExceptionHandlerInterface**: Глобал exception handler бүртгэх
 
 **Parameters:**
@@ -113,12 +127,169 @@ $app->use(function ($req, $handler) {
     return $handler->handle($req);
 });
 
+// Router
+$app->use(new ApiRouter());
+$app->use(new AdminRouter());
+
 // Exception handler
 $app->use(new ExceptionHandler());
-
-// Router merge
-$app->use(new CustomRouter());
 ```
+
+---
+
+#### `public function override(RouterInterface $router): static`
+
+Override Router бүртгэх - өмнө бүртгэсэн route-ийг зориудаар дарж бичих.
+
+Override lane-д нэмсэн router-ууд match/generate/pattern/getRoutes бүгдэд ердийн use()-ийн router-ээс **өмнө** шалгагдана. Тиймээс тэдгээрийн route нь ердийн router-ийн ижил path-ийг бүртгэх дарааллаас үл хамааран ялна.
+
+Энэ нь override-ийг ил, зориудын үйлдэл болгоно (explicit override best practice), зүгээр use()-ийн дарааллд найдсан далд override биш. Bootstrap уншихад override бүр тодорхой харагдана.
+
+**Хэзээ ашиглах вэ:** override нь зөвхөн дарж бичих гэж буй route чинь vendor багц (composer dependency) дотор зарлагдсан үед л утга учиртай. Vendor доторх route-ийн кодыг developer шууд засах боломжгүй (зассан ч `composer update` дээр дарагдана) тул өөрийн Router-аар override lane-д дарж бичнэ. Харин route чинь өөрийн project дотор зарлагдсан бол шууд эх кодон дээр нь засаад болно - тийм тохиолдолд override ашиглаж шинэ Router зарлах нь ямар ч шаардлагагүй overkill.
+
+**Parameters:**
+- `RouterInterface $router` - Override хийх route-уудыг агуулсан Router
+
+**Returns:** `static` - Fluent chain-д ашиглахын тулд `$this` буцаана
+
+**Example:**
+```php
+$app->use(new ProfileRouter());         // vendor багцаас ирсэн /profile - кодыг нь засах боломжгүй
+
+$themeProfile = new Router();
+$themeProfile->GET('/profile', [ThemeProfileController::class, 'show'])->name('profile');
+$app->override($themeProfile);          // ил override - энэ ялна
+```
+
+---
+
+#### `public function mount(string $prefix): static`
+
+Application-ийг URL prefix-д mount хийнэ.
+
+Mount хийгдсэний дараа Router-уудын бүх route нь автоматаар энэ prefix-д хадгалагдсан гэж тооцогдоно. Router-ууд өөрсдөө mount path-ийг мэдэхгүй - reusable байна.
+
+**Parameters:**
+- `string $prefix` - URL prefix (mount point). Leading/trailing slash сонголтот.
+
+**Returns:** `static` - Fluent chain-д ашиглахын тулд `$this` буцаана
+
+**Жишээ:**
+```php
+$app = (new Application(new NonBodyResponse()))->mount('/dashboard');
+// Router-д GET('/users') гэж бүртгэсэн route нь /dashboard/users-д сонгогдоно
+// generate('users') нь '/dashboard/users' буцаана
+
+// Prefix normalization:
+$app->mount('/dashboard');   // -> '/dashboard'
+$app->mount('dashboard');    // -> '/dashboard'
+$app->mount('/dashboard/');  // -> '/dashboard'
+$app->mount('');             // -> '' (mount-гүй)
+$app->mount('/');            // -> '' (mount-гүй)
+```
+
+---
+
+#### `public function getMountPath(): string`
+
+Одоогийн mount path-ийг буцаах (introspection).
+
+**Returns:** `string` - Mount хийгээгүй бол '' (хоосон), эсвэл '/dashboard' гэх мэт
+
+---
+
+#### `public function match(string $path, string $method): ?array`
+
+Route match хайна - override lane эхэлж, дараа нь ердийн router-ууд (first-added-wins).
+
+Mount path тогтоосон бол request path-аас mount prefix-ийг автоматаар зүсэж Router-уудад дамжуулна. Boundary protection: `/dashboard` нь `/dashboard`, `/dashboard/users`-д таарна гэхдээ `/dashboardx`-д таарахгүй.
+
+**Parameters:**
+- `string $path` - Хайх URL path
+- `string $method` - HTTP method
+
+**Returns:** `?array` - Таарвал `[callable, params, middleware]` tuple, үгүй бол `null`
+
+---
+
+#### `public function generate(string $ruleName, array $params = []): string`
+
+Route name хайна - override lane эхэлж, дараа нь ердийн router-ууд (first-found-wins). Mount хийсэн үед л үр дүнд mount prefix авто-нэмэгдэнэ - mount заавал биш.
+
+**Parameters:**
+- `string $ruleName` - Маршрутын нэр
+- `array $params` - Параметрүүд
+
+**Returns:** `string` - Үүсгэсэн URL (mount хийсэн бол prefix-тэй)
+
+**Throws:**
+- `\OutOfRangeException` - Аль ч router-д name олдохгүй бол
+- `\InvalidArgumentException` - Параметрийн төрөл буруу бол
+
+**Жишээ:**
+```php
+$router->GET('/users/{int:id}', $handler)->name('user.view');
+$app->use($router);
+
+// Mount-гүй үед - route path-ийг шууд буцаана
+$url = $app->generate('user.view', ['id' => 42]);
+// '/users/42'
+
+// Mount хийсэн бол prefix авто-нэмэгдэнэ
+$app->mount('/dashboard');
+$url = $app->generate('user.view', ['id' => 42]);
+// '/dashboard/users/42'
+```
+
+---
+
+#### `public function pattern(string $ruleName): string`
+
+Route name-ийн filter prefix зэргийг хасч буцаах (client-side substitution-д бэлэн). Mount хийсэн үед л mount prefix авто-нэмэгдэнэ - mount заавал биш.
+
+**Parameters:**
+- `string $ruleName` - Маршрутын нэр
+
+**Returns:** `string` - Pattern (mount хийсэн бол prefix-тэй)
+
+**Жишээ:**
+```php
+$router->GET('/news/{int:id}/{slug}', $h)->name('news');
+$app->use($router);
+
+// Mount-гүй үед
+$pattern = $app->pattern('news');
+// '/news/{id}/{slug}'
+
+// Mount хийсэн бол prefix авто-нэмэгдэнэ
+$app->mount('/dashboard');
+$pattern = $app->pattern('news');
+// '/dashboard/news/{id}/{slug}'
+```
+
+---
+
+#### `public function getRoutes(): array`
+
+Бүх router-ийн route-уудыг нэгтгэж буцаана. Mount prefix-тэй бүтэн URL pattern буцаана. Эрэмбэ нь `match()`-тэй ижил: override lane эхэлж, дараа нь ердийн router; (pattern, method) collision дээр эхэлж олдсон ялна (override lane > ердийн router).
+
+**Returns:** `array` - `[pattern => [method => [callable, middleware]]]`
+
+---
+
+#### `public function getRouters(): array`
+
+use()-ээр бүртгэлтэй ердийн router-уудыг буцаах (introspection). use()-ийн дарааллаар жагсагдсан. Override lane-ийг getOverrides() буцаана.
+
+**Returns:** `list<RouterInterface>`
+
+---
+
+#### `public function getOverrides(): array`
+
+override()-ээр бүртгэлтэй override lane-ийн router-уудыг буцаах (introspection). Эдгээр нь ердийн router-ээс өмнө шалгагдаж өмнө бүртгэсэн route-ийг дарж бичдэг. override()-ийн дарааллаар жагсагдсан.
+
+**Returns:** `list<RouterInterface>`
 
 ---
 
@@ -128,21 +299,14 @@ PSR-15 RequestHandlerInterface::handle()-ийн хэрэгжилт.
 
 Энэ функц нь HTTP хүсэлтийг боловсруулах бүрэн процесс-ийг гүйцэтгэнэ:
 
-1. Middleware queue-г бэлтгэнэ
+1. Global middleware queue-г бэлтгэнэ
 2. Эцсийн route matcher callback-г queue-н төгсгөлд нэмнэ
 3. Middleware-үүдийг дарааллаар нь ажиллуулна (onion model)
-4. Тохирох маршрут олдох юм бол Controller/action эсвэл Closure-г дуудаж Response үүсгэнэ
-5. Response-г буцаана (ResponseInterface биш бол NonBodyResponse fallback)
+4. Application::match() дуудаж route хайна (mount prefix зүсэлт + multi-router delegation)
+5. Per-route middleware-уудыг бэлдэж, эцэст нь Controller/action эсвэл Closure-г дуудаж Response үүсгэнэ
+6. Response-г буцаана (ResponseInterface биш бол constructor-оор өгсөн prototype-оос clone хийж fallback болгоно)
 
-**Route Matching:**
-- URI path болон HTTP method-оор маршрут олно
-- Route parameters-г Request attributes-д нэмнэ (жишээ: `/user/{int:id}` -> `$request->getAttribute('params')['id']`)
-- Router instance-г Request attribute-д нэмнэ (`$request->getAttribute('router')`)
-
-**Route Execution:**
-- Closure route: `$app->GET('/hello', function($req) { ... })`
-- Controller/action route: `$app->GET('/user/{id}', [UserController::class, 'show'])`
-- Route parameters автоматаар action method-ийн аргумент болгон дамжуулна
+**'application' request attribute:** Application instance өөрөө `'application'` attribute-аар request-д очино. Controller-ууд `$request->getAttribute('application')->generate($name)` дуудах үед Application::generate() дамжин mount prefix автоматаар прэпенд хийгдэнэ.
 
 **Parameters:**
 - `ServerRequestInterface $request` - PSR-7 ServerRequest объект
@@ -155,12 +319,18 @@ PSR-15 RequestHandlerInterface::handle()-ийн хэрэгжилт.
 
 **Жишээ:**
 ```php
+use codesaur\Router\Router;
+use codesaur\Http\Application\Application;
 use codesaur\Http\Message\ServerRequest;
+use codesaur\Http\Message\NonBodyResponse;
 
-$app = new Application();
-$app->GET('/hello', function ($req) {
+$router = new Router();
+$router->GET('/hello', function ($req) {
     echo 'Hello World';
 });
+
+$app = new Application(new NonBodyResponse());
+$app->use($router);
 
 $request = (new ServerRequest())->initFromGlobal();
 $response = $app->handle($request);
@@ -202,15 +372,13 @@ Controller үүсэхэд PSR-7 ServerRequest автоматаар дамжин�
 
 Request объектыг авах.
 
-Controller-ийн бүх method-үүдэд PSR-7 ServerRequest объектод хандах боломж олгоно.
-
-**Returns:** `ServerRequestInterface` - PSR-7 ServerRequest объект
+**Returns:** `ServerRequestInterface`
 
 **Жишээ:**
 ```php
 $request = $this->getRequest();
-$method = $request->getMethod(); // GET, POST, PUT, DELETE, etc.
-$uri = $request->getUri()->getPath(); // /user/123
+$method = $request->getMethod();
+$uri = $request->getUri()->getPath();
 ```
 
 ---
@@ -219,15 +387,12 @@ $uri = $request->getUri()->getPath(); // /user/123
 
 POST/PUT/JSON parsed body-г буцаах.
 
-Request body нь JSON эсвэл form-urlencoded байвал парс хийгдсэн массив буцаана. Null бол хоосон массив буцаана.
-
-**Returns:** `array<string, mixed>` - Parsed body массив
+**Returns:** `array<string, mixed>`
 
 **Жишээ:**
 ```php
 $data = $this->getParsedBody();
 $name = $data['name'] ?? 'Unknown';
-$email = $data['email'] ?? '';
 ```
 
 ---
@@ -236,16 +401,12 @@ $email = $data['email'] ?? '';
 
 Query string параметрүүдийг авах.
 
-URL-ийн query string-ээс параметрүүдийг авна.
-Жишээ: `?page=1&limit=10` -> `['page' => '1', 'limit' => '10']`
-
-**Returns:** `array<string, mixed>` - Query параметрүүдийн массив
+**Returns:** `array<string, mixed>`
 
 **Жишээ:**
 ```php
 $params = $this->getQueryParams();
 $page = $params['page'] ?? 1;
-$limit = $params['limit'] ?? 10;
 ```
 
 ---
@@ -254,16 +415,7 @@ $limit = $params['limit'] ?? 10;
 
 Бүх request attributes-г авах.
 
-Attributes нь route parameters, router instance, middleware-ээс нэмсэн custom attributes зэрэг байж болно.
-
-**Returns:** `array<string, mixed>` - Бүх attributes-ийн массив
-
-**Жишээ:**
-```php
-$attrs = $this->getAttributes();
-$params = $attrs['params'] ?? [];
-$router = $attrs['router'] ?? null;
-```
+**Returns:** `array<string, mixed>`
 
 ---
 
@@ -271,13 +423,11 @@ $router = $attrs['router'] ?? null;
 
 Нэг attribute-г авах.
 
-Request attributes нь route parameters, router instance, middleware-ээс нэмсэн custom attributes зэрэг байж болно.
-
 **Parameters:**
 - `string $name` - Attribute-ийн нэр
 - `mixed $default` - Attribute байхгүй бол буцаах default утга
 
-**Returns:** `mixed` - Attribute-ийн утга эсвэл default утга
+**Returns:** `mixed`
 
 **Жишээ:**
 ```php
@@ -285,12 +435,12 @@ Request attributes нь route parameters, router instance, middleware-ээс н�
 $params = $this->getAttribute('params');
 $userId = $params['id'] ?? null;
 
-// Router instance авах
-$router = $this->getAttribute('router');
-
-// Middleware-ээс нэмсэн custom attribute
-$startTime = $this->getAttribute('start_time', 0);
+// Application instance авах (mount-aware URL generate-д)
+$app = $this->getAttribute('application');
+$url = $app->generate('user.view', ['id' => $userId]);
 ```
+
+> **Чухал:** `'application'` attribute нь **Application instance өөрөө** буцаана. Controller-ээс URL үүсгэхдээ `$this->getAttribute('application')->generate(...)` дуудахад mount prefix автоматаар нэмэгдэнэ.
 
 ---
 
@@ -299,7 +449,7 @@ $startTime = $this->getAttribute('start_time', 0);
 **Namespace:** `codesaur\Http\Application`
 **Implements:** `codesaur\Http\Application\ExceptionHandlerInterface`
 
-Энэ класс нь ExceptionHandlerInterface-ийг хэрэгжүүлж, системд гарсан аливаа Exception / Error-ийг нэг цэгээс хүлээн авч, зохих HTTP статус кодтой хариу үүсгэх зориулалттай, lightweight алдааны боловсруулагч юм.
+Lightweight алдааны боловсруулагч. Системд гарсан аливаа Exception / Error-ийг нэг цэгээс хүлээн авч, зохих HTTP статус кодтой хариу үүсгэх.
 
 ### Тайлбар
 
@@ -316,11 +466,10 @@ $startTime = $this->getAttribute('start_time', 0);
 
 Exception / Throwable боловсруулах үндсэн функц.
 
-Application::use(new ExceptionHandler()) гэж бүртгэгдсэн үед PHP-ийн set_exception_handler() механизмаар автоматаар дуудагдана.
+`Application::use(new ExceptionHandler())` гэж бүртгэгдсэн үед PHP-ийн `set_exception_handler()` механизмаар автоматаар дуудагдана.
 
 Энэ функц нь:
 1. Алдааны кодыг шалгаж HTTP статус код тохируулна
-   - Exception/Error-ийн `getCode()` нь HTTP статус код байвал ReasonPhrase class-д тодорхойлогдсон эсэхийг шалгаж, зөв бол `http_response_code()` дуудаж HTTP загварыг тохируулна
 2. Алдааг error_log руу бичнэ
 3. HTML error page үүсгэн хэрэглэгчид харуулна
 4. Development mode дээр stack trace харуулна
@@ -332,11 +481,9 @@ Application::use(new ExceptionHandler()) гэж бүртгэгдсэн үед PH
 
 **Жишээ:**
 ```php
-// Application-д бүртгэх
-$app = new Application();
+$app = new Application(new NonBodyResponse());
 $app->use(new ExceptionHandler());
 
-// Алдаа гаргах
 throw new \Error("Not Found", 404);
 throw new \Exception("Server Error", 500);
 ```
@@ -349,21 +496,6 @@ define('CODESAUR_DEVELOPMENT', true);
 
 ---
 
-#### `private function getHost(): string`
-
-HTTP host URL-г тодорхойлох.
-
-HTTPS эсвэл HTTP протоколыг автоматаар тодорхойлж, host name-ийг нэгтгэн буцаана.
-
-Протоколыг дараах байдлаар тодорхойлно:
-- `$_SERVER['HTTPS']` байгаа бөгөөд 'off' биш бол HTTPS
-- `$_SERVER['SERVER_PORT'] == 443` бол HTTPS
-- Бусад тохиолдолд HTTP
-
-**Returns:** `string` - Protocol + host (жишээ: https://example.com, http://localhost)
-
----
-
 ## ExceptionHandlerInterface
 
 **Namespace:** `codesaur\Http\Application`
@@ -373,9 +505,9 @@ Application түвшний алдааны боловсруулагч интер�
 
 ### Тайлбар
 
-Энэ интерфэйсийг хэрэгжүүлсэн класс нь системд гарсан аливаа Exception / Error-ийг нэг цэгээс хүлээн авч хүссэн хэлбэрээр боловсруулах боломжтой болно.
+Энэ интерфэйсийг хэрэгжүүлсэн класс нь системд гарсан аливаа Exception / Error-ийг нэг цэгээс хүлээн авч хүссэн хэлбэрээр боловсруулах боломжтой.
 
-Application::use(new ExceptionHandler()) гэж бүртгэх үед PHP-ийн set_exception_handler() механизмаар автоматаар дуудагддаг.
+`Application::use(new YourHandler())` гэж бүртгэх үед PHP-ийн `set_exception_handler()` механизмаар автоматаар дуудагддаг.
 
 **Зориулалт:**
 - Алдааны логжуулалт
@@ -389,8 +521,6 @@ Application::use(new ExceptionHandler()) гэж бүртгэх үед PHP-ийн
 
 Гарсан Exception / Throwable-ийг боловсруулах функц.
 
-Энэ функц нь системд гарсан аливаа алдааг хүлээн авч, HTTP статус код тохируулах, лог бичих, error page үүсгэх зэрэг боловсруулалт хийх үүрэгтэй.
-
 **Parameters:**
 - `\Throwable $throwable` - Илэрсэн Exception эсвэл Error объект
 
@@ -402,14 +532,9 @@ class MyCustomHandler implements ExceptionHandlerInterface
 {
     public function exception(\Throwable $throwable): void
     {
-        // HTTP статус код тохируулах
         $code = $throwable->getCode() ?: 500;
         \http_response_code($code);
-
-        // Лог бичих
         \error_log($throwable->getMessage());
-
-        // Error page харуулах
         echo "Error: " . $throwable->getMessage();
     }
 }
@@ -419,25 +544,57 @@ $app->use(new MyCustomHandler());
 
 ---
 
-## Холбоотой багцууд
+## Per-route Middleware
 
-- **codesaur/router** - Router функционал
-- **codesaur/http-message** - PSR-7 HTTP Message хэрэгжилт
+Route-д тусгай middleware оноох (Router::middleware-аар). Дэмжих төрлүүд:
+- **MiddlewareInterface instance**
+- **Closure** ($request, $handler)
+- **class-string** (MiddlewareInterface implement хийсэн) - lazy instantiation
+
+```php
+$router = new Router();
+
+// MiddlewareInterface instance
+$router->GET('/admin', $h)->middleware([new AuthMiddleware()]);
+
+// class-string (lazy instantiate)
+$router->POST('/save', $h)->middleware([AuthMiddleware::class, CsrfMiddleware::class]);
+
+// Closure
+$router->DELETE('/x', $h)->middleware([
+    function ($req, $handler) { return $handler->handle($req); },
+]);
+```
+
+**Validation:** Application::handle() дотор per-route middleware нь strict шалгагдана. Class-string байхгүй эсвэл MiddlewareInterface/Closure биш зүйл бол `\InvalidArgumentException` шиддэг.
 
 ---
 
-## Жишээ
+## Холбоотой багцууд
 
-### Бүрэн жишээ
+- **codesaur/router** - Router функционал (шаардлагатай - `RouterInterface`-ийг өгдөг)
+- **codesaur/http-message** - PSR-7 HTTP Message хэрэгжилт (санал болгосон - `ResponseInterface` prototype-ийн тохиромжтой эх сурвалж, жишээ нь `NonBodyResponse`; аль ч PSR-7 implementation ажиллана)
+
+---
+
+## Бүрэн жишээ
 
 ```php
+use codesaur\Router\Router;
 use codesaur\Http\Application\Application;
 use codesaur\Http\Application\ExceptionHandler;
 use codesaur\Http\Application\Controller;
 use codesaur\Http\Message\ServerRequest;
+use codesaur\Http\Message\NonBodyResponse;
+
+// Router үүсгэх, route-ууд бүртгэх
+$router = new Router();
+$router->GET('/', [HomeController::class, 'index']);
+$router->GET('/user/{int:id}', [UserController::class, 'show'])->name('user.show');
+$router->POST('/api/users', [UserController::class, 'create']);
 
 // Application үүсгэх
-$app = new Application();
+$app = new Application(new NonBodyResponse());
 
 // Exception handler бүртгэх
 $app->use(new ExceptionHandler());
@@ -448,10 +605,11 @@ $app->use(function ($request, $handler) {
     return $handler->handle($request);
 });
 
-// Route бүртгэх
-$app->GET('/', [HomeController::class, 'index']);
-$app->GET('/user/{int:id}', [UserController::class, 'show']);
-$app->POST('/api/users', [UserController::class, 'create']);
+// Router нэмэх
+$app->use($router);
+
+// Сонголт: mount хийх
+// $app->mount('/api/v1');
 
 // Request боловсруулах
 $request = (new ServerRequest())->initFromGlobal();
@@ -465,7 +623,6 @@ class UserController extends Controller
 {
     public function show(int $id): void
     {
-        $params = $this->getAttribute('params');
         $query = $this->getQueryParams();
 
         echo "User ID: $id";
@@ -477,7 +634,10 @@ class UserController extends Controller
         $data = $this->getParsedBody();
         $name = $data['name'] ?? 'Unknown';
 
-        echo "Created user: $name";
+        // Mount-aware URL generate
+        $userUrl = $this->getAttribute('application')->generate('user.show', ['id' => 1]);
+
+        echo "Created user: $name (view: $userUrl)";
     }
 }
 ```

@@ -10,9 +10,11 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 use codesaur\Http\Message\ServerRequest;
 use codesaur\Http\Message\Uri;
+use codesaur\Http\Message\NonBodyResponse;
 use codesaur\Http\Application\Application;
 use codesaur\Http\Application\Controller;
 use codesaur\Http\Application\Tests\TestHelper;
+use codesaur\Router\Router;
 
 /**
  * Edge Case Tests
@@ -24,15 +26,18 @@ use codesaur\Http\Application\Tests\TestHelper;
 class EdgeCaseTest extends TestCase
 {
     private Application $app;
+    private Router $router;
 
     protected function setUp(): void
     {
-        $this->app = new Application();
+        $this->app = new Application(new NonBodyResponse());
+        $this->router = new Router();
+        $this->app->use($this->router);
     }
 
     public function testEmptyPath(): void
     {
-        $this->app->GET('/', function ($req) {
+        $this->router->GET('/', function ($req) {
             echo 'root';
         });
 
@@ -45,7 +50,7 @@ class EdgeCaseTest extends TestCase
     public function testVeryLongPath(): void
     {
         $longPath = '/' . str_repeat('a', 1000);
-        $this->app->GET($longPath, function ($req) {
+        $this->router->GET($longPath, function ($req) {
             echo 'long';
         });
 
@@ -58,7 +63,7 @@ class EdgeCaseTest extends TestCase
     public function testSpecialCharactersInPath(): void
     {
         // Router нь string type дэмжихгүй, type-гүй параметр ашиглах
-        $this->app->GET('/test/{param}', function ($req) {
+        $this->router->GET('/test/{param}', function ($req) {
             $params = $req->getAttribute('params');
             echo $params['param'];
         });
@@ -72,7 +77,7 @@ class EdgeCaseTest extends TestCase
 
     public function testMultipleRouteParameters(): void
     {
-        $this->app->GET('/a/{int:x}/b/{int:y}/c/{int:z}', function ($req) {
+        $this->router->GET('/a/{int:x}/b/{int:y}/c/{int:z}', function ($req) {
             $params = $req->getAttribute('params');
             echo $params['x'] + $params['y'] + $params['z'];
         });
@@ -95,7 +100,7 @@ class EdgeCaseTest extends TestCase
             }
         });
 
-        $this->app->GET('/test', function ($req) {
+        $this->router->GET('/test', function ($req) {
             $modified = $req->getAttribute('modified');
             $count = $req->getAttribute('count');
             echo "Modified: $modified, Count: $count";
@@ -119,7 +124,7 @@ class EdgeCaseTest extends TestCase
             }
         });
 
-        $this->app->GET('/test', function ($req) use (&$executed) {
+        $this->router->GET('/test', function ($req) use (&$executed) {
             $executed = true;
         });
 
@@ -132,7 +137,7 @@ class EdgeCaseTest extends TestCase
 
     public function testControllerWithNoParameters(): void
     {
-        $this->app->GET('/simple', [EdgeCaseTestController::class, 'simple']);
+        $this->router->GET('/simple', [EdgeCaseTestController::class, 'simple']);
 
         $request = TestHelper::createServerRequest('GET', '/simple');
 
@@ -142,7 +147,7 @@ class EdgeCaseTest extends TestCase
 
     public function testControllerWithManyParameters(): void
     {
-        $this->app->GET('/complex/{int:a}/{int:b}/{int:c}/{int:d}/{int:e}',
+        $this->router->GET('/complex/{int:a}/{int:b}/{int:c}/{int:d}/{int:e}',
             [EdgeCaseTestController::class, 'complex']);
 
         $request = TestHelper::createServerRequest('GET', '/complex/1/2/3/4/5');
@@ -153,7 +158,7 @@ class EdgeCaseTest extends TestCase
 
     public function testSubdirectoryPathHandling(): void
     {
-        $this->app->GET('/api/users', function ($req) {
+        $this->router->GET('/api/users', function ($req) {
             echo 'users';
         });
 
@@ -165,7 +170,7 @@ class EdgeCaseTest extends TestCase
 
     public function testEmptyMiddlewareStack(): void
     {
-        $this->app->GET('/test', function ($req) {
+        $this->router->GET('/test', function ($req) {
             echo 'test';
         });
 

@@ -8,7 +8,15 @@ use codesaur\Router\Router;
 /**
  * ExampleRouter Class
  *
- * Энэ бол codesaur/router ашиглан маршрутууд тодорхойлсон router жишээ.
+ * codesaur/router-ийн Router class-ийг extend хийсэн модулийн router жишээ.
+ *
+ * Энэ нь Application-руу use() ашиглан холбогддог:
+ *   $app = new Application(new NonBodyResponse());
+ *   $app->use(new ExampleRouter());
+ *
+ * Router нь mount prefix-ийг мэдэхгүй - тиймээс route-уудаа цэвэр
+ * path-аар (mount prefix-ГҮЙ) бүртгэнэ. Application::mount() ашигласан
+ * үед prefix автоматаар нэмэгдэнэ.
  *
  * Энэ router нь дараах боломжуудыг харуулдаг:
  * - Dynamic parameters (route parameters)
