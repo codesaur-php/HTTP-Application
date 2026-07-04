@@ -7,6 +7,23 @@ versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [7.0.1] - 2026-07-04
+
+### Security
+- `ExceptionHandler`: the error title, message, and host are now escaped with `htmlspecialchars()` before being rendered into the HTML error page. Previously a request path echoed back in a 404 message (e.g. `Unknown route pattern [...]`) could reflect unescaped user input into the response (reflected XSS).
+
+### Fixed
+- `Application::handle()`: a missing `SCRIPT_NAME` server param no longer triggers an undefined array key warning - it now falls back to `''`.
+- Tests: `PerformanceTest::testManyRoutesPerformance()` closure did not capture `$i`, triggering an "Undefined variable" PHP warning.
+
+### Dependencies
+- codesaur/router: ^6.0.0 -> ^6.0.1
+
+### Removed
+- Maintainer phone number removed from `composer.json` and `CONTRIBUTING.md`.
+
+---
+
 ## [7.0.0] - 2026-06-03
 
 Major architectural overhaul: separation of concerns, no magic API, multi-router delegation, mount feature, and PSR-7-only HTTP message coupling (the fallback response is injected via the constructor).

@@ -86,10 +86,16 @@ class ExceptionHandler implements ExceptionHandlerInterface
          */
         $host = $this->getHost();
 
+        // Алдааны мессеж нь хэрэглэгчийн оруулсан өгөгдөл (жишээ: URL path) агуулж
+        // болзошгүй тул XSS-ээс сэргийлж HTML escape хийнэ
+        $safeTitle = \htmlspecialchars($title, \ENT_QUOTES, 'UTF-8');
+        $safeMessage = \htmlspecialchars($message, \ENT_QUOTES, 'UTF-8');
+        $safeHost = \htmlspecialchars($host, \ENT_QUOTES, 'UTF-8');
+
         echo '<!doctype html>'
             . '<html lang="en">'
-            . "<head><meta charset=\"utf-8\"><title>$title</title></head>"
-            . "<body><h1>$title</h1><p>$message</p><hr><a href=\"$host\">$host</a></body>"
+            . "<head><meta charset=\"utf-8\"><title>$safeTitle</title></head>"
+            . "<body><h1>$safeTitle</h1><p>$safeMessage</p><hr><a href=\"$safeHost\">$safeHost</a></body>"
             . '</html>';
 
         /**

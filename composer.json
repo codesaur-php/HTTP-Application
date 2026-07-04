@@ -7,7 +7,7 @@
     "homepage": "https://github.com/codesaur-php",
     "authors": [
         {
-            "name": "Narankhuu (+976 99000287)",
+            "name": "Narankhuu",
             "email": "codesaur@gmail.com",
             "homepage": "https://github.com/codesaur"
         }
@@ -15,7 +15,7 @@
     "require": {
         "psr/http-message": "^2.0",
         "psr/http-server-middleware": "^1.0.2",
-        "codesaur/router": "^6.0.0"
+        "codesaur/router": "^6.0.1"
     },
     "suggest": {
         "codesaur/http-message": "PSR-7 implementation; NonBodyResponse-ийг fallback хариуны prototype болгон Application constructor-д дамжуулж болно (^3.0.3)"

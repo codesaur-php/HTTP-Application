@@ -68,7 +68,7 @@ class PerformanceTest extends TestCase
     {
         // 100 route нэмэх
         for ($i = 0; $i < 100; $i++) {
-            $this->router->GET("/route$i", function ($req) {
+            $this->router->GET("/route$i", function ($req) use ($i) {
                 echo "route$i";
             });
         }

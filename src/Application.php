@@ -507,7 +507,7 @@ class Application implements RequestHandlerInterface
 
             // Document root-с гадуур байрлах үед замыг зөв тооцоолох
             // Жишээ: /subdirectory/index.php -> /subdirectory -> path-г зөв тохируулах
-            if (($lngth = \strlen(\dirname($request->getServerParams()['SCRIPT_NAME']))) > 1) {
+            if (($lngth = \strlen(\dirname($request->getServerParams()['SCRIPT_NAME'] ?? ''))) > 1) {
                 $path = '/' . \ltrim(\substr($path, $lngth), '/');
             }
 
